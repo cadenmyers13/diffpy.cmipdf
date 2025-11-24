@@ -1,0 +1,18 @@
+{
+  "maintainer_name": "Simon Billinge",
+  "maintainer_email": "sb2896@columbia.edu",
+  "maintainer_github_username": "sbillinge",
+  "contributors": "Caden Myers, Simon Billinge, and members of the Billinge group",
+  "license_holders": "Simon Billinge",
+  "project_name": "diffpy.cmipdf",
+  "github_username_or_orgname": "diffpy",
+  "github_repo_name": "diffpy.cmipdf",
+  "conda_pypi_package_dist_name": "diffpy.cmipdf",
+  "package_dir_name": "diffpy.cmipdf",
+  "project_short_description": "The code of the PDF pack of the diffpy.cmi package.",
+  "project_keywords": "diffraction, PDF, X-ray, neutron",
+  "minimum_supported_python_version": "3.11",
+  "maximum_supported_python_version": "3.13",
+  "project_needs_c_code_compiled": "No",
+  "project_has_gui_tests": "No"
+}
