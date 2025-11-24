@@ -1,7 +1,7 @@
 Authors
 =======
 
-Simon Billinge, Caden Myers, Billinge Group members
+Caden Myers, Simon Billinge, and members of the Billinge group
 
 Contributors
 ------------

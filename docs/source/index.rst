@@ -4,7 +4,7 @@
 
 .. |title| replace:: diffpy.cmipdf documentation
 
-``diffpy.cmipdf`` - Python package for doing science.
+``diffpy.cmipdf`` - The code of the PDF pack of the diffpy.cmi package.
 
 | Software version |release|
 | Last updated |today|.
@@ -21,7 +21,7 @@ To get started, please visit the :ref:`Getting started <getting-started>` page.
 Authors
 =======
 
-``diffpy.cmipdf`` is developed by Simon Billinge, Caden Myers, Billinge Group members. The maintainer for this project is Simon Billinge. For a detailed list of contributors see
+``diffpy.cmipdf`` is developed by Caden Myers, Simon Billinge, and members of the Billinge group. The maintainer for this project is Simon Billinge. For a detailed list of contributors see
 https://github.com/diffpy/diffpy.cmipdf/graphs/contributors.
 
 ============

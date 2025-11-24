@@ -7,7 +7,7 @@ def main():
     parser = argparse.ArgumentParser(
         prog="diffpy.cmipdf",
         description=(
-            "Python package for doing science.\n\n"
+            "The code of the PDF pack of the diffpy.cmi package.\n\n"
             "For more information, visit: "
             "https://github.com/diffpy/diffpy.cmipdf/"
         ),

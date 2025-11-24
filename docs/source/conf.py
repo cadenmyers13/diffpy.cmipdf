@@ -32,7 +32,7 @@ sys.path.insert(0, str(Path("../..").resolve()))
 sys.path.insert(0, str(Path("../../src").resolve()))
 
 # abbreviations
-ab_authors = "Simon Billinge, Caden Myers, Billinge Group members"
+ab_authors = "Caden Myers, Simon Billinge, and members of the Billinge group"
 
 # -- General configuration ------------------------------------------------
 
@@ -69,7 +69,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "diffpy.cmipdf"
-copyright = "%Y, The Trustees of Columbia University in the City of New York"
+copyright = "%Y, Simon Billinge"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

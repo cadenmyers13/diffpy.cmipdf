@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 ##############################################################################
 #
-# (c) 2025 The Trustees of Columbia University in the City of New York.
+# (c) 2025 Simon Billinge.
 # All rights reserved.
 #
-# File coded by: Simon Billinge, Caden Myers, Billinge Group members.
+# File coded by: Caden Myers, Simon Billinge, and members of the Billinge
+#                group.
 #
 # See GitHub contributions for a more detailed list of contributors.
 # https://github.com/diffpy/diffpy.cmipdf/graphs/contributors  # noqa: E501

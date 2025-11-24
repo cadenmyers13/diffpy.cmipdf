@@ -1,24 +1,32 @@
 #!/usr/bin/env python
 ##############################################################################
 #
-# diffpy.srfit      by DANSE Diffraction group
-#                   Simon J. L. Billinge
-#                   (c) 2008 The Trustees of Columbia University
-#                   in the City of New York.  All rights reserved.
+# (c) 2025 Simon Billinge.
+# All rights reserved.
 #
-# File coded by:    Chris Farrow
+# File coded by: Caden Myers, Simon Billinge, and members of the Billinge
+#                group.
 #
-# See AUTHORS.txt for a list of people who contributed.
-# See LICENSE_DANSE.txt for license information.
+# See GitHub contributions for a more detailed list of contributors.
+# https://github.com/diffpy/diffpy.cmipdf/graphs/contributors
+#
+# See LICENSE.rst for license information.
 #
 ##############################################################################
-"""PDF calculation tools."""
+"""The code of the PDF pack of the diffpy.cmi package."""
+
+from diffpy.cmipdf.debyepdfgenerator import DebyePDFGenerator
+from diffpy.cmipdf.pdfcontribution import PDFContribution
+from diffpy.cmipdf.pdfgenerator import PDFGenerator
+from diffpy.cmipdf.pdfparser import PDFParser
+
+# package version
+from diffpy.cmipdf.version import __version__  # noqa
+
+# silence the pyflakes syntax checker
+assert __version__ or True
 
 __all__ = ["PDFGenerator", "DebyePDFGenerator", "PDFContribution", "PDFParser"]
 
-from diffpy.srfit.pdf.debyepdfgenerator import DebyePDFGenerator
-from diffpy.srfit.pdf.pdfcontribution import PDFContribution
-from diffpy.srfit.pdf.pdfgenerator import PDFGenerator
-from diffpy.srfit.pdf.pdfparser import PDFParser
 
 # End of file

@@ -36,7 +36,7 @@
 .. |Tracking| image:: https://img.shields.io/badge/issue_tracking-github-blue
         :target: https://github.com/diffpy/diffpy.cmipdf/issues
 
-Python package for doing science.
+The code of the PDF pack of the diffpy.cmi package.
 
 * LONGER DESCRIPTION HERE
 
