@@ -16,9 +16,9 @@
 
 __all__ = ["PDFGenerator", "DebyePDFGenerator", "PDFContribution", "PDFParser"]
 
-from diffpy.srfit.pdf.debyepdfgenerator import DebyePDFGenerator
-from diffpy.srfit.pdf.pdfcontribution import PDFContribution
-from diffpy.srfit.pdf.pdfgenerator import PDFGenerator
-from diffpy.srfit.pdf.pdfparser import PDFParser
+from diffpy.cmipdf.debyepdfgenerator import DebyePDFGenerator
+from diffpy.cmipdf.pdfcontribution import PDFContribution
+from diffpy.cmipdf.pdfgenerator import PDFGenerator
+from diffpy.cmipdf.pdfparser import PDFParser
 
 # End of file

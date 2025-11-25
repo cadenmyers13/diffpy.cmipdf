@@ -24,7 +24,7 @@ for its use.
 
 __all__ = ["PDFGenerator"]
 
-from diffpy.srfit.pdf.basepdfgenerator import BasePDFGenerator
+from diffpy.cmipdf.basepdfgenerator import BasePDFGenerator
 
 
 class PDFGenerator(BasePDFGenerator):

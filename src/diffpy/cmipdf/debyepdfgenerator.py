@@ -22,7 +22,7 @@ isolated scatterers, such as nanoparticles and molecules.
 
 __all__ = ["DebyePDFGenerator"]
 
-from diffpy.srfit.pdf.basepdfgenerator import BasePDFGenerator
+from diffpy.cmipdf.basepdfgenerator import BasePDFGenerator
 
 
 class DebyePDFGenerator(BasePDFGenerator):
