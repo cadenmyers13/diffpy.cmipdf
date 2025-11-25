@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 ##############################################################################
 #
-# diffpy.srfit      by DANSE Diffraction group
-#                   Simon J. L. Billinge
-#                   (c) 2010 The Trustees of Columbia University
-#                   in the City of New York.  All rights reserved.
+# (c) 2025 Simon Billinge.
+# All rights reserved.
 #
-# File coded by:    Chris Farrow
+# File coded by: Caden Myers, Simon Billinge, and members of the Billinge
+#                group.
 #
-# See AUTHORS.txt for a list of people who contributed.
-# See LICENSE_DANSE.txt for license information.
+# See GitHub contributions for a more detailed list of contributors.
+# https://github.com/diffpy/diffpy.cmipdf/graphs/contributors
+#
+# See LICENSE.rst for license information.
 #
 ##############################################################################
 """PDFContribution class.
