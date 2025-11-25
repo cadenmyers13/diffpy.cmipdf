@@ -13,7 +13,7 @@
 # See LICENSE.rst for license information.
 #
 ##############################################################################
-"""PDF calculation tools."""
+"""The code of the PDF pack of the diffpy.cmi package."""
 
 __all__ = ["PDFGenerator", "DebyePDFGenerator", "PDFContribution", "PDFParser"]
 
