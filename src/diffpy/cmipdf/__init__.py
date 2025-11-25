@@ -15,11 +15,17 @@
 ##############################################################################
 """The code of the PDF pack of the diffpy.cmi package."""
 
-__all__ = ["PDFGenerator", "DebyePDFGenerator", "PDFContribution", "PDFParser"]
-
 from diffpy.cmipdf.debyepdfgenerator import DebyePDFGenerator
 from diffpy.cmipdf.pdfcontribution import PDFContribution
 from diffpy.cmipdf.pdfgenerator import PDFGenerator
 from diffpy.cmipdf.pdfparser import PDFParser
+
+# package version
+from diffpy.cmipdf.version import __version__  # noqa
+
+__all__ = ["PDFGenerator", "DebyePDFGenerator", "PDFContribution", "PDFParser"]
+
+# silence the pyflakes syntax checker
+assert __version__ or True
 
 # End of file
