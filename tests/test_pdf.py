@@ -154,7 +154,7 @@ def testGenerator(
 
     qmax = 27.0
     gen = PDFGenerator()
-    gen.setScatteringType("N")
+    gen.set_scattering_type("N")
     assert "N" == gen.getScatteringType()
     gen.setQmax(qmax)
     assert qmax == pytest.approx(gen.getQmax())

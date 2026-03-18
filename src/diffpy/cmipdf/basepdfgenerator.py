@@ -74,7 +74,7 @@ class BasePDFGenerator(ProfileGenerator):
     ---------------
     stype
         The scattering type "X" for x-ray, "N" for neutron (see
-        'setScatteringType').
+        'set_scattering_type').
     qmax
         The maximum scattering vector used to generate the PDF (see
         setQmax).
@@ -161,7 +161,7 @@ class BasePDFGenerator(ProfileGenerator):
 
         stype = self.meta.get("stype")
         if stype is not None:
-            self.setScatteringType(stype)
+            self.set_scattering_type(stype)
 
         qmax = self.meta.get("qmax")
         if qmax is not None:
@@ -179,7 +179,7 @@ class BasePDFGenerator(ProfileGenerator):
 
         return
 
-    def setScatteringType(self, stype="X"):
+    def set_scattering_type(self, stype="X"):
         """Set the scattering type.
 
         Parameters
@@ -199,7 +199,7 @@ class BasePDFGenerator(ProfileGenerator):
     def getScatteringType(self):
         """Get the scattering type.
 
-        See 'setScatteringType'.
+        See 'set_scattering_type'.
         """
         return self._calc.getRadiationType()
 

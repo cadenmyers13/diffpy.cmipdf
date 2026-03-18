@@ -293,7 +293,7 @@ class PDFContribution(FitContribution):
         val = self.profile.meta.get(kwd)
         return val
 
-    def setScatteringType(self, type="X"):
+    def set_scattering_type(self, type="X"):
         """Set the scattering type.
 
         Parameters
@@ -305,13 +305,13 @@ class PDFContribution(FitContribution):
         """
         self._meta["stype"] = type
         for gen in self._generators.values():
-            gen.setScatteringType(type)
+            gen.set_scattering_type(type)
         return
 
     def getScatteringType(self):
         """Get the scattering type.
 
-        See 'setScatteringType'.
+        See 'set_scattering_type'.
         """
         return self._get_meta_value("stype")
 

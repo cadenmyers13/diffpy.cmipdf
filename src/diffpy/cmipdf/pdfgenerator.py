@@ -65,7 +65,7 @@ class PDFGenerator(BasePDFGenerator):
     ---------------
     stype
         The scattering type "X" for x-ray, "N" for neutron (see
-        'setScatteringType').
+        'set_scattering_type').
     qmax
         The maximum scattering vector used to generate the PDF (see
         setQmax).
