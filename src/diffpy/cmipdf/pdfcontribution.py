@@ -308,7 +308,7 @@ class PDFContribution(FitContribution):
             gen.set_scattering_type(type)
         return
 
-    def getScatteringType(self):
+    def get_scattering_type(self):
         """Get the scattering type.
 
         See 'set_scattering_type'.

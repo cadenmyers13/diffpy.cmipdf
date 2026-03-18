@@ -193,10 +193,10 @@ class BasePDFGenerator(ProfileGenerator):
         """
         self._calc.setScatteringFactorTableByType(stype)
         # update the meta dictionary only if there was no exception
-        self.meta["stype"] = self.getScatteringType()
+        self.meta["stype"] = self.get_scattering_type()
         return
 
-    def getScatteringType(self):
+    def get_scattering_type(self):
         """Get the scattering type.
 
         See 'set_scattering_type'.
