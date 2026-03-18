@@ -77,7 +77,7 @@ class BasePDFGenerator(ProfileGenerator):
         'set_scattering_type').
     qmax
         The maximum scattering vector used to generate the PDF (see
-        setQmax).
+        set_qmax).
     qmin
         The minimum scattering vector used to generate the PDF (see
         setQmin).
@@ -165,7 +165,7 @@ class BasePDFGenerator(ProfileGenerator):
 
         qmax = self.meta.get("qmax")
         if qmax is not None:
-            self.setQmax(qmax)
+            self.set_qmax(qmax)
 
         qmin = self.meta.get("qmin")
         if qmin is not None:
@@ -203,7 +203,7 @@ class BasePDFGenerator(ProfileGenerator):
         """
         return self._calc.getRadiationType()
 
-    def setQmax(self, qmax):
+    def set_qmax(self, qmax):
         """Set the qmax value."""
         self._calc.qmax = qmax
         self.meta["qmax"] = self.getQmax()

@@ -68,7 +68,7 @@ class PDFGenerator(BasePDFGenerator):
         'set_scattering_type').
     qmax
         The maximum scattering vector used to generate the PDF (see
-        setQmax).
+        set_qmax).
     qmin
         The minimum scattering vector used to generate the PDF (see
         setQmin).

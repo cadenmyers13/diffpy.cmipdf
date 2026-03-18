@@ -156,7 +156,7 @@ def testGenerator(
     gen = PDFGenerator()
     gen.set_scattering_type("N")
     assert "N" == gen.get_scattering_type()
-    gen.setQmax(qmax)
+    gen.set_qmax(qmax)
     assert qmax == pytest.approx(gen.getQmax())
 
     stru = PDFFitStructure()
@@ -215,8 +215,8 @@ def test_setQmin(diffpy_structure_available, diffpy_srreal_available):
     return
 
 
-def test_setQmax(diffpy_structure_available, diffpy_srreal_available):
-    """Check PDFContribution.setQmax()"""
+def test_set_qmax(diffpy_structure_available, diffpy_srreal_available):
+    """Check PDFContribution.set_qmax()"""
     if not diffpy_structure_available:
         pytest.skip("diffpy.structure package not available")
     from diffpy.structure import Structure
@@ -225,10 +225,10 @@ def test_setQmax(diffpy_structure_available, diffpy_srreal_available):
         pytest.skip("diffpy.srreal package not available")
 
     pc = PDFContribution("pdf")
-    pc.setQmax(21)
+    pc.set_qmax(21)
     pc.addStructure("empty", Structure())
     assert 21 == pc.empty.getQmax()
-    pc.setQmax(22)
+    pc.set_qmax(22)
     assert 22 == pc.getQmax()
     assert 22 == pc.empty.getQmax()
     return
@@ -247,12 +247,12 @@ def test_getQmax(diffpy_structure_available, diffpy_srreal_available):
     # (1) contribution metadata
     pc1 = PDFContribution("pdf")
     assert pc1.getQmax() is None
-    pc1.setQmax(17)
+    pc1.set_qmax(17)
     assert 17 == pc1.getQmax()
     # (2) contribution metadata
     pc2 = PDFContribution("pdf")
     pc2.addStructure("empty", Structure())
-    pc2.empty.setQmax(18)
+    pc2.empty.set_qmax(18)
     assert 18 == pc2.getQmax()
     # (3) profile metadata
     pc3 = PDFContribution("pdf")
