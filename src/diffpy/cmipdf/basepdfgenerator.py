@@ -72,7 +72,7 @@ class BasePDFGenerator(ProfileGenerator):
 
     Usable Metadata
     ---------------
-    stype
+    scattering_type : str
         The scattering type "X" for x-ray, "N" for neutron (see
         'set_scattering_type').
     qmax
@@ -159,9 +159,9 @@ class BasePDFGenerator(ProfileGenerator):
         """Process the metadata once it gets set."""
         ProfileGenerator._process_metadata(self)
 
-        stype = self.meta.get("stype")
-        if stype is not None:
-            self.set_scattering_type(stype)
+        scattering_type = self.meta.get("scattering_type")
+        if scattering_type is not None:
+            self.set_scattering_type(scattering_type)
 
         qmax = self.meta.get("qmax")
         if qmax is not None:
@@ -179,21 +179,25 @@ class BasePDFGenerator(ProfileGenerator):
 
         return
 
-    def set_scattering_type(self, stype="X"):
+    def set_scattering_type(self, scattering_type="X"):
         """Set the scattering type.
 
         Parameters
         ----------
-        stype
-            "X" for x-ray, "N" for neutron, "E" for electrons,
+        scattering_type : str, optional
+            The scattering type. Default is `"X"`.
+            `"X"` for x-ray, `"N"` for neutron, `"E"` for electrons,
             or any registered type from diffpy.srreal from
             ScatteringFactorTable.getRegisteredTypes().
 
-        Raises ValueError for unknown scattering type.
+        Raises
+        ------
+        ValueError
+            If the scattering type is unknown.
         """
-        self._calc.setScatteringFactorTableByType(stype)
+        self._calc.setScatteringFactorTableByType(scattering_type)
         # update the meta dictionary only if there was no exception
-        self.meta["stype"] = self.get_scattering_type()
+        self.meta["scattering_type"] = self.get_scattering_type()
         return
 
     def get_scattering_type(self):
