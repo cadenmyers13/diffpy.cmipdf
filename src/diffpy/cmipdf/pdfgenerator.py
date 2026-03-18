@@ -89,7 +89,7 @@ class PDFGenerator(BasePDFGenerator):
         from diffpy.srreal.pdfcalculator import PDFCalculator
 
         BasePDFGenerator.__init__(self, name)
-        self._setCalculator(PDFCalculator())
+        self._set_calculator(PDFCalculator())
         return
 
 

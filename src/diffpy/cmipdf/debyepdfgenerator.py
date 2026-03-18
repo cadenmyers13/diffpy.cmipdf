@@ -93,7 +93,7 @@ class DebyePDFGenerator(BasePDFGenerator):
         See those classes (located in diffpy.srfit.structure) for how they are
         used. The resulting ParameterSet will be managed by this generator.
 
-        Attributes
+        Parameters
         ----------
         stru
             diffpy.structure.Structure, pyobjcryst.crystal.Crystal or
@@ -117,7 +117,7 @@ class DebyePDFGenerator(BasePDFGenerator):
         object (from diffpy or pyobjcryst).  The passed ParameterSet will be
         managed by this generator.
 
-        Attributes
+        Parameters
         ----------
         parset
             A SrRealParSet that holds the structural information.
@@ -136,7 +136,7 @@ class DebyePDFGenerator(BasePDFGenerator):
         from diffpy.srreal.pdfcalculator import DebyePDFCalculator
 
         BasePDFGenerator.__init__(self, name)
-        self._setCalculator(DebyePDFCalculator())
+        self._set_calculator(DebyePDFCalculator())
         return
 
 
