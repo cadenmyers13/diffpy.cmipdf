@@ -25,6 +25,7 @@ import pytest
 
 from diffpy.cmipdf import PDFContribution, PDFGenerator, PDFParser
 from diffpy.srfit.exceptions import SrFitError
+from diffpy.srfit.fitbase import ProfileParser
 
 # ----------------------------------------------------------------------------
 
@@ -47,7 +48,7 @@ def testParser1(datafile):
     assert meta.get("scale") is None
     assert meta.get("doping") is None
 
-    x, y, dx, dy = parser.getData()
+    x, y, dx, dy = parser.get_data()
     assert dx is None
     assert dy is None
 
@@ -79,12 +80,12 @@ def testParser1(datafile):
 
 def testParser2(datafile):
     data = datafile("si-q27r60-xray.gr")
-    parser = PDFParser()
-    parser.parseFile(data)
+    parser = ProfileParser()
+    parser.parse_file(data)
 
     meta = parser._meta
 
-    assert data == meta["filename"]
+    assert str(data) == meta["filename"]
     assert 1 == meta["nbanks"]
     assert "X" == meta["stype"]
     assert 27 == meta["qmax"]
@@ -95,7 +96,7 @@ def testParser2(datafile):
     assert meta.get("scale") is None
     assert meta.get("doping") is None
 
-    x, y, dx, dy = parser.getData()
+    x, y, dx, dy = parser.get_data()
     testx = numpy.linspace(0.01, 60, 5999, endpoint=False)
     diff = testx - x
     res = numpy.dot(diff, diff)
@@ -137,7 +138,7 @@ def testParser2(datafile):
     res = numpy.dot(diff, diff)
     assert 0 == pytest.approx(res)
 
-    assert dx is None
+    assert dx.tolist() == [0] * len(dx)
     return
 
 
@@ -154,9 +155,9 @@ def testGenerator(
 
     qmax = 27.0
     gen = PDFGenerator()
-    gen.set_scattering_type("N")
-    assert "N" == gen.get_scattering_type()
-    gen.set_qmax(qmax)
+    gen.setScatteringType("N")
+    assert "N" == gen.getScatteringType()
+    gen.setQmax(qmax)
     assert qmax == pytest.approx(gen.getQmax())
 
     stru = PDFFitStructure()
@@ -174,9 +175,9 @@ def testGenerator(
         defval = calc._getDoubleAttr(pname)
         assert defval == par.getValue()
         # Test setting values
-        par.setValue(1.0)
+        par.set_value(1.0)
         assert 1.0 == par.getValue()
-        par.setValue(defval)
+        par.set_value(defval)
         assert defval == par.getValue()
 
     r = numpy.arange(0, 10, 0.1)
@@ -215,8 +216,8 @@ def test_setQmin(diffpy_structure_available, diffpy_srreal_available):
     return
 
 
-def test_set_qmax(diffpy_structure_available, diffpy_srreal_available):
-    """Check PDFContribution.set_qmax()"""
+def test_setQmax(diffpy_structure_available, diffpy_srreal_available):
+    """Check PDFContribution.setQmax()"""
     if not diffpy_structure_available:
         pytest.skip("diffpy.structure package not available")
     from diffpy.structure import Structure
@@ -225,10 +226,10 @@ def test_set_qmax(diffpy_structure_available, diffpy_srreal_available):
         pytest.skip("diffpy.srreal package not available")
 
     pc = PDFContribution("pdf")
-    pc.set_qmax(21)
+    pc.setQmax(21)
     pc.addStructure("empty", Structure())
     assert 21 == pc.empty.getQmax()
-    pc.set_qmax(22)
+    pc.setQmax(22)
     assert 22 == pc.getQmax()
     assert 22 == pc.empty.getQmax()
     return
@@ -243,16 +244,16 @@ def test_getQmax(diffpy_structure_available, diffpy_srreal_available):
     if not diffpy_srreal_available:
         pytest.skip("diffpy.srreal package not available")
 
-    # cover all code branches in PDFContribution._getMetaValue
+    # cover all code branches in PDFContribution._get_meta_value
     # (1) contribution metadata
     pc1 = PDFContribution("pdf")
     assert pc1.getQmax() is None
-    pc1.set_qmax(17)
+    pc1.setQmax(17)
     assert 17 == pc1.getQmax()
     # (2) contribution metadata
     pc2 = PDFContribution("pdf")
     pc2.addStructure("empty", Structure())
-    pc2.empty.set_qmax(18)
+    pc2.empty.setQmax(18)
     assert 18 == pc2.getQmax()
     # (3) profile metadata
     pc3 = PDFContribution("pdf")
@@ -309,7 +310,9 @@ def test_pickling(
     pc2 = pickle.loads(pickle.dumps(pc))
     res0 = pc.residual()
     assert numpy.array_equal(res0, pc2.residual())
-    for p in chain(pc.iterPars("Uiso"), pc2.iterPars("Uiso")):
+    for p in chain(
+        pc.iterate_over_parameters("Uiso"), pc2.iterate_over_parameters("Uiso")
+    ):
         p.value = 0.004
     res1 = pc.residual()
     assert not numpy.allclose(res0, res1)
