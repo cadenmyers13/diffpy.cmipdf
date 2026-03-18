@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 ##############################################################################
 #
-# (c) 2025 Simon Billinge.
-# All rights reserved.
+# diffpy.srfit      by DANSE Diffraction group
+#                   Simon J. L. Billinge
+#                   (c) 2010 The Trustees of Columbia University
+#                   in the City of New York.  All rights reserved.
 #
-# File coded by: Caden Myers, Simon Billinge, and members of the Billinge
-#                group.
+# File coded by:    Chris Farrow
 #
-# See GitHub contributions for a more detailed list of contributors.
-# https://github.com/diffpy/diffpy.cmipdf/graphs/contributors
-#
-# See LICENSE.rst for license information.
+# See AUTHORS.txt for a list of people who contributed.
+# See LICENSE_DANSE.txt for license information.
 #
 ##############################################################################
 """Form factors (characteristic functions) used in PDF nanoshape
@@ -22,7 +21,7 @@ Gnano(r) = f(r) Gcryst(r), where f(r) is the nanoparticle characteristic
 function and Gcryst(f) is the crystal PDF.
 
 These functions are meant to be imported and added to a FitContribution
-using the 'registerFunction' method of that class.
+using the 'register_function' method of that class.
 """
 
 __all__ = [
@@ -49,7 +48,7 @@ from diffpy.srfit.fitbase.calculator import Calculator
 def sphericalCF(r, psize):
     """Spherical nanoparticle characteristic function.
 
-    Attributes
+    Parameters
     ----------
     r
         distance of interaction
@@ -74,7 +73,7 @@ def spheroidalCF(r, erad, prad):
 
     Spheroid with radii (erad, erad, prad)
 
-    Attributes
+    Parameters
     ----------
     prad
         polar radius
@@ -96,7 +95,7 @@ def spheroidalCF2(r, psize, axrat):
 
     Form factor for ellipsoid with radii (psize/2, psize/2, axrat*psize/2)
 
-    Attributes
+    Parameters
     ----------
     r
         distance of interaction
@@ -207,7 +206,7 @@ def lognormalSphericalCF(r, psize, psig):
     """Spherical nanoparticle characteristic function with lognormal
     size distribution.
 
-    Attributes
+    Parameters
     ----------
     r
         distance of interaction
@@ -264,7 +263,7 @@ def lognormalSphericalCF(r, psize, psig):
 def sheetCF(r, sthick):
     """Nanosheet characteristic function.
 
-    Attributes
+    Parameters
     ----------
     r
         distance of interaction
@@ -294,7 +293,7 @@ def sheetCF(r, sthick):
 def shellCF(r, radius, thickness):
     """Spherical shell characteristic function.
 
-    Attributes
+    Parameters
     ----------
     radius
         Inner radius
@@ -314,7 +313,7 @@ def shellCF(r, radius, thickness):
 def shellCF2(r, a, delta):
     """Spherical shell characteristic function.
 
-    Attributes
+    Parameters
     ----------
     a
         Central radius
@@ -379,7 +378,7 @@ class SASCF(Calculator):
     def __init__(self, name, model):
         """Initialize the generator.
 
-        Attributes
+        Parameters
         ----------
         name
             A name for the SASCF
