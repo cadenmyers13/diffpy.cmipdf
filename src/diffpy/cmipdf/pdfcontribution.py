@@ -322,7 +322,7 @@ class PDFContribution(FitContribution):
             gen.set_qmax(qmax)
         return
 
-    def getQmax(self):
+    def get_qmax(self):
         """Get the qmax value."""
         return self._get_meta_value("qmax")
 
