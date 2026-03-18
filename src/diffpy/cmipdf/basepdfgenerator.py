@@ -241,8 +241,14 @@ class BasePDFGenerator(ProfileGenerator):
         self.meta["qmin"] = self.get_qmin()
         return
 
-    def getQmin(self):
-        """Get the qmin value."""
+    def get_qmin(self):
+        """Get the qmin value.
+
+        Returns
+        -------
+        float
+             The minimum scattering vector used to generate the PDF.
+        """
         return self._calc.qmin
 
     def setStructure(self, stru, name="phase", periodic=True):
