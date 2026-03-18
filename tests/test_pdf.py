@@ -160,13 +160,13 @@ def testGenerator(
     gen.setQmax(qmax)
     assert qmax == pytest.approx(gen.get_qmax())
 
-    stru = PDFFitStructure()
+    structure = PDFFitStructure()
     ciffile = datafile("ni.cif")
     cif_path = str(ciffile)
-    stru.read(cif_path)
+    structure.read(cif_path)
     for i in range(4):
-        stru[i].Bisoequiv = 1
-    gen.setStructure(stru)
+        structure[i].Bisoequiv = 1
+    gen.set_structure(structure)
 
     calc = gen._calc
     # Test parameters
@@ -193,7 +193,7 @@ def testGenerator(
     calc.rmax = r[-1] + 0.5 * calc.rstep
     calc.qmax = qmax
     calc.setScatteringFactorTableByType("N")
-    calc.eval(stru)
+    calc.eval(structure)
     yref = calc.pdf
 
     diff = y - yref

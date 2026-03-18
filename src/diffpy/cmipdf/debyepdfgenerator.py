@@ -39,7 +39,7 @@ class DebyePDFGenerator(BasePDFGenerator):
         DebyePDFCalculator instance for calculating the PDF
     _phase
         The structure ParameterSets used to calculate the profile.
-    stru
+    structure
         The structure objected adapted by _phase.
     _lastr
         The last value of r over which the PDF was calculated. This is
@@ -85,21 +85,22 @@ class DebyePDFGenerator(BasePDFGenerator):
         See Managed Parameters.
     """
 
-    def setStructure(self, stru, name="phase", periodic=False):
+    def set_structure(self, structure, name="phase", periodic=False):
         """Set the structure that will be used to calculate the PDF.
 
         This creates a DiffpyStructureParSet, ObjCrystCrystalParSet or
-        ObjCrystMoleculeParSet that adapts stru to a ParameterSet interface.
+        ObjCrystMoleculeParSet that adapts structure to a ParameterSet
+        interface.
         See those classes (located in diffpy.srfit.structure) for how they are
         used. The resulting ParameterSet will be managed by this generator.
 
         Parameters
         ----------
-        stru
+        structure
             diffpy.structure.Structure, pyobjcryst.crystal.Crystal or
             pyobjcryst.molecule.Molecule instance.  Default None.
         name
-            A name to give to the managed ParameterSet that adapts stru
+            A name to give to the managed ParameterSet that adapts structure
             (default "phase").
         periodic
             The structure should be treated as periodic (default
@@ -107,7 +108,7 @@ class DebyePDFGenerator(BasePDFGenerator):
             periodicity, in which case this will have no effect on the
             PDF calculation.
         """
-        return BasePDFGenerator.setStructure(self, stru, name, periodic)
+        return BasePDFGenerator.set_structure(self, structure, name, periodic)
 
     def setPhase(self, parset, periodic=False):
         """Set the phase that will be used to calculate the PDF.

@@ -46,7 +46,7 @@ class BasePDFGenerator(ProfileGenerator):
         the PDF.
     _phase
         The structure ParameterSet used to calculate the profile.
-    stru
+    structure
         The structure objected adapted by _phase.
     _lastr
         The last value of r over which the PDF was calculated. This is
@@ -98,7 +98,7 @@ class BasePDFGenerator(ProfileGenerator):
         ProfileGenerator.__init__(self, name)
 
         self._phase = None
-        self.stru = None
+        self.structure = None
         self.meta = {}
         self._lastr = numpy.empty(0)
         self._calc = None
@@ -251,21 +251,22 @@ class BasePDFGenerator(ProfileGenerator):
         """
         return self._calc.qmin
 
-    def setStructure(self, stru, name="phase", periodic=True):
+    def set_structure(self, structure, name="phase", periodic=True):
         """Set the structure that will be used to calculate the PDF.
 
         This creates a DiffpyStructureParSet, ObjCrystCrystalParSet or
-        ObjCrystMoleculeParSet that adapts stru to a ParameterSet interface.
+        ObjCrystMoleculeParSet that adapts structure to a ParameterSet
+        interface.
         See those classes (located in diffpy.srfit.structure) for how they are
         used. The resulting ParameterSet will be managed by this generator.
 
         Parameters
         ----------
-        stru
+        structure
             diffpy.structure.Structure, pyobjcryst.crystal.Crystal or
             pyobjcryst.molecule.Molecule instance.  Default None.
         name
-            A name to give to the managed ParameterSet that adapts stru
+            A name to give to the managed ParameterSet that adapts structure
             (default "phase").
         periodic
             The structure should be treated as periodic (default
@@ -275,7 +276,7 @@ class BasePDFGenerator(ProfileGenerator):
         """
 
         # Create the ParameterSet
-        parset = struToParameterSet(name, stru)
+        parset = struToParameterSet(name, structure)
 
         # Set the phase
         self.setPhase(parset, periodic)
@@ -303,7 +304,7 @@ class BasePDFGenerator(ProfileGenerator):
         """
         # Store the ParameterSet for easy access
         self._phase = parset
-        self.stru = self._phase.stru
+        self.structure = self._phase.structure
 
         # Put this ParameterSet in the ProfileGenerator.
         self.add_parameter_set(parset)

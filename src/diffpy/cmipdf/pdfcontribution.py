@@ -166,7 +166,7 @@ class PDFContribution(FitContribution):
 
     # Phase methods
 
-    def addStructure(self, name, stru, periodic=True):
+    def addStructure(self, name, structure, periodic=True):
         """Add a phase that goes into the PDF calculation.
 
         Parameters
@@ -179,7 +179,7 @@ class PDFContribution(FitContribution):
             contribution.name.phase, where 'contribution' is this
             contribution and 'name' is passed name.
             (default), then the name will be set as "phase".
-        stru
+        structure
             diffpy.structure.Structure, pyobjcryst.crystal.Crystal or
             pyobjcryst.molecule.Molecule instance.  Default None.
         periodic
@@ -192,7 +192,7 @@ class PDFContribution(FitContribution):
 
 
         Returns the new phase (ParameterSet appropriate for what was passed in
-        stru.)
+        structure.)
         """
         # Based on periodic, create the proper generator.
         if periodic:
@@ -205,7 +205,7 @@ class PDFContribution(FitContribution):
             gen = DebyePDFGenerator(name)
 
         # Set up the generator
-        gen.setStructure(stru, "phase", periodic)
+        gen.set_structure(structure, "phase", periodic)
         self._setup_generator(gen)
 
         return gen.phase
@@ -237,7 +237,7 @@ class PDFContribution(FitContribution):
 
 
         Returns the new phase (ParameterSet appropriate for what was passed in
-        stru.)
+        structure.)
         """
         # Based on periodic, create the proper generator.
         if periodic:
@@ -259,7 +259,7 @@ class PDFContribution(FitContribution):
         """Setup a generator.
 
         The generator must already have a managed SrRealParSet, added
-        with setStructure or setPhase.
+        with set_structure or setPhase.
         """
         # Add the generator to this FitContribution
         self.add_profile_generator(gen)
