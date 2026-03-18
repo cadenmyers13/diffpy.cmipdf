@@ -80,7 +80,7 @@ class BasePDFGenerator(ProfileGenerator):
         set_qmax).
     qmin
         The minimum scattering vector used to generate the PDF (see
-        setQmin).
+        set_qmin).
     scale
         See Managed Parameters.
     delta1
@@ -169,7 +169,7 @@ class BasePDFGenerator(ProfileGenerator):
 
         qmin = self.meta.get("qmin")
         if qmin is not None:
-            self.setQmin(qmin)
+            self.set_qmin(qmin)
 
         for name in self.__class__._parnames:
             val = self.meta.get(name)
@@ -229,10 +229,16 @@ class BasePDFGenerator(ProfileGenerator):
         """
         return self._calc.qmax
 
-    def setQmin(self, qmin):
-        """Set the qmin value."""
+    def set_qmin(self, qmin):
+        """Set the qmin value.
+
+        Parameters
+        ----------
+        qmin : float
+            The minimum scattering vector used to generate the PDF.
+        """
         self._calc.qmin = qmin
-        self.meta["qmin"] = self.getQmin()
+        self.meta["qmin"] = self.get_qmin()
         return
 
     def getQmin(self):

@@ -72,7 +72,7 @@ class DebyePDFGenerator(BasePDFGenerator):
         set_qmax).
     qmin
         The minimum scattering vector used to generate the PDF (see
-        setQmin).
+        set_qmin).
     scale
         See Managed Parameters.
     delta1

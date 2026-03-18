@@ -202,16 +202,16 @@ def testGenerator(
     return
 
 
-def test_setQmin(diffpy_structure_available, diffpy_srreal_available):
+def test_set_qmin(diffpy_structure_available, diffpy_srreal_available):
     """Verify qmin is propagated to the calculator object."""
     if not diffpy_srreal_available:
         pytest.skip("diffpy.srreal package not available")
 
     gen = PDFGenerator()
-    assert 0 == gen.getQmin()
+    assert 0 == gen.get_qmin()
     assert 0 == gen._calc.qmin
-    gen.setQmin(0.93)
-    assert 0.93 == gen.getQmin()
+    gen.set_qmin(0.93)
+    assert 0.93 == gen.get_qmin()
     assert 0.93 == gen._calc.qmin
     return
 

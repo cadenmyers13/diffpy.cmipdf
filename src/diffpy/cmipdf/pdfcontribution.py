@@ -326,14 +326,14 @@ class PDFContribution(FitContribution):
         """Get the qmax value."""
         return self._get_meta_value("qmax")
 
-    def setQmin(self, qmin):
+    def set_qmin(self, qmin):
         """Set the qmin value."""
         self._meta["qmin"] = qmin
         for gen in self._generators.values():
-            gen.setQmin(qmin)
+            gen.set_qmin(qmin)
         return
 
-    def getQmin(self):
+    def get_qmin(self):
         """Get the qmin value."""
         return self._get_meta_value("qmin")
 
