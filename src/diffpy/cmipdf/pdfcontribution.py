@@ -30,7 +30,7 @@ class PDFContribution(FitContribution):
     PDFContribution is a FitContribution that is customized for PDF fits. Data
     and phases can be added directly to the PDFContribution. Setup of
     constraints and restraints requires direct interaction with the generator
-    attributes (see setPhase).
+    attributes (see set_structure_from_parset).
 
     Attributes
     ----------
@@ -250,7 +250,7 @@ class PDFContribution(FitContribution):
             gen = DebyePDFGenerator(name)
 
         # Set up the generator
-        gen.setPhase(parset, periodic)
+        gen.set_structure_from_parset(parset, periodic)
         self._setup_generator(gen)
 
         return gen.phase
@@ -259,7 +259,7 @@ class PDFContribution(FitContribution):
         """Setup a generator.
 
         The generator must already have a managed SrRealParSet, added
-        with set_structure or setPhase.
+        with set_structure or set_structure_from_parset.
         """
         # Add the generator to this FitContribution
         self.add_profile_generator(gen)

@@ -110,7 +110,7 @@ class DebyePDFGenerator(BasePDFGenerator):
         """
         return BasePDFGenerator.set_structure(self, structure, name, periodic)
 
-    def setPhase(self, parset, periodic=False):
+    def set_structure_from_parset(self, parset, periodic=False):
         """Set the phase that will be used to calculate the PDF.
 
         Set the phase directly with a DiffpyStructureParSet,
@@ -130,7 +130,9 @@ class DebyePDFGenerator(BasePDFGenerator):
             Note that some structures do not support periodicity, in
             which case this will be ignored.
         """
-        return BasePDFGenerator.setPhase(self, parset, periodic)
+        return BasePDFGenerator.set_structure_from_parset(
+            self, parset, periodic
+        )
 
     def __init__(self, name="pdf"):
         """Initialize the generator."""

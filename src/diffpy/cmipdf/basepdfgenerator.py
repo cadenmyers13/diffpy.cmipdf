@@ -247,7 +247,7 @@ class BasePDFGenerator(ProfileGenerator):
         Returns
         -------
         float
-             The minimum scattering vector used to generate the PDF.
+            The minimum scattering vector used to generate the PDF.
         """
         return self._calc.qmin
 
@@ -262,13 +262,13 @@ class BasePDFGenerator(ProfileGenerator):
 
         Parameters
         ----------
-        structure
-            diffpy.structure.Structure, pyobjcryst.crystal.Crystal or
-            pyobjcryst.molecule.Molecule instance.  Default None.
-        name
-            A name to give to the managed ParameterSet that adapts structure
+        structure : Structure or Crystal or Molecule
+            The diffpy.structure.Structure, pyobjcryst.crystal.Crystal or
+            pyobjcryst.molecule.Molecule instance.
+        name : str, optional
+            The name to give to the managed ParameterSet that adapts structure
             (default "phase").
-        periodic
+        periodic : bool, optional
             The structure should be treated as periodic (default
             True). Note that some structures do not support
             periodicity, in which case this will have no effect on the
@@ -279,10 +279,10 @@ class BasePDFGenerator(ProfileGenerator):
         parset = struToParameterSet(name, structure)
 
         # Set the phase
-        self.setPhase(parset, periodic)
+        self.set_structure_from_parset(parset, periodic)
         return
 
-    def setPhase(self, parset, periodic=True):
+    def set_structure_from_parset(self, parset, periodic=True):
         """Set the phase that will be used to calculate the PDF.
 
         Set the phase directly with a DiffpyStructureParSet,
