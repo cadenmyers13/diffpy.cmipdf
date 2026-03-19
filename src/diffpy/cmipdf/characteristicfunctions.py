@@ -29,7 +29,7 @@ __all__ = [
     "spherical_particle",
     "spheroidal_particle",
     "lognormal_spherical_distribution",
-    "sheetCF",
+    "sheet_particle",
     "shellCF",
     "shellCF2",
     "SASCF",
@@ -267,33 +267,33 @@ def lognormal_spherical_distribution(radial_dist, p_diameter, p_sigma):
     )
 
 
-def sheetCF(r, sthick):
+def sheet_particle(r, thickness):
     """Nanosheet characteristic function.
 
     Parameters
     ----------
-    r
-        distance of interaction
-    sthick
-        Thickness of nanosheet
+    r: float or array-like
+        The distance of interaction.
+    thickness : float
+        The thickness of nanosheet.
 
 
     From Kodama et al., Acta Cryst. A, 62, 444-453
     """
-    # handle zero or negative sthick.  make it work for scalars and arrays.
-    if sthick <= 0:
-        return 0 * sthick
+    # handle zero or negative thickness.  make it work for scalars and arrays.
+    if thickness <= 0:
+        return 0 * thickness
     # process scalar r
     if numpy.isscalar(r):
-        rv = 1 - 0.5 * r / sthick if r < sthick else 0.5 * sthick / r
+        rv = 1 - 0.5 * r / thickness if r < thickness else 0.5 * thickness / r
         return rv
     # handle array-type r
     ra = numpy.asarray(r)
-    lo = ra < sthick
+    lo = ra < thickness
     hi = ~lo
     f = numpy.empty_like(ra, dtype=float)
-    f[lo] = 1 - 0.5 * ra[lo] / sthick
-    f[hi] = 0.5 * sthick / ra[hi]
+    f[lo] = 1 - 0.5 * ra[lo] / thickness
+    f[hi] = 0.5 * thickness / ra[hi]
     return f
 
 
