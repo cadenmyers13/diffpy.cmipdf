@@ -17,7 +17,6 @@
 
 import io
 import pickle
-import unittest
 from itertools import chain
 
 import numpy
@@ -295,7 +294,3 @@ def test_pickling(
     assert not numpy.allclose(res0, res1)
     assert numpy.array_equal(res1, pc2.residual())
     return
-
-
-if __name__ == "__main__":
-    unittest.main()
