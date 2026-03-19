@@ -31,7 +31,6 @@ __all__ = [
     "lognormal_spherical_distribution",
     "sheet_particle",
     "spherical_shell",
-    "shellCF2",
     "SASCF",
 ]
 
@@ -316,10 +315,10 @@ def spherical_shell(radial_dist, inner_radius, thickness):
     """
     d = 1.0 * thickness
     a = 1.0 * inner_radius + d / 2.0
-    return shellCF2(radial_dist, a, d)
+    return _calculate_shell_cf(radial_dist, a, d)
 
 
-def shellCF2(r, a, delta):
+def _calculate_shell_cf(r, a, delta):
     """Spherical shell characteristic function.
 
     Parameters
