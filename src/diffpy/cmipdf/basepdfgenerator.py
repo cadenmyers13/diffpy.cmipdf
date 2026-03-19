@@ -304,7 +304,7 @@ class BasePDFGenerator(ProfileGenerator):
         """
         # Store the ParameterSet for easy access
         self._phase = parset
-        self.structure = self._phase.structure
+        self.structure = self._phase.stru
 
         # Put this ParameterSet in the ProfileGenerator.
         self.add_parameter_set(parset)

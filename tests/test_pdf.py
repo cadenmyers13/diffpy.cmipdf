@@ -26,6 +26,7 @@ import pytest
 from diffpy.cmipdf import PDFContribution, PDFGenerator
 from diffpy.srfit.exceptions import SrFitError
 from diffpy.srfit.fitbase import ProfileParser
+from diffpy.structure import Structure
 
 # ----------------------------------------------------------------------------
 
@@ -170,7 +171,7 @@ def testGenerator(
 
     calc = gen._calc
     # Test parameters
-    for par in gen.iterPars(recurse=False):
+    for par in gen.iterate_over_parameters(recurse=False):
         pname = par.name
         defval = calc._getDoubleAttr(pname)
         assert defval == par.getValue()
@@ -216,20 +217,13 @@ def test_set_qmin(diffpy_structure_available, diffpy_srreal_available):
     return
 
 
-def test_setQmax(diffpy_structure_available, diffpy_srreal_available):
+def test_setQmax():
     """Check PDFContribution.setQmax()"""
-    if not diffpy_structure_available:
-        pytest.skip("diffpy.structure package not available")
-    from diffpy.structure import Structure
-
-    if not diffpy_srreal_available:
-        pytest.skip("diffpy.srreal package not available")
-
     pc = PDFContribution("pdf")
-    pc.setQmax(21)
+    pc.set_qmax(21)
     pc.addStructure("empty", Structure())
     assert 21 == pc.empty.get_qmax()
-    pc.setQmax(22)
+    pc.set_qmax(22)
     assert 22 == pc.get_qmax()
     assert 22 == pc.empty.get_qmax()
     return

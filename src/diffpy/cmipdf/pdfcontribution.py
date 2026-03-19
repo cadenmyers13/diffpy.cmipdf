@@ -196,11 +196,11 @@ class PDFContribution(FitContribution):
         """
         # Based on periodic, create the proper generator.
         if periodic:
-            from diffpy.srfit.pdf.pdfgenerator import PDFGenerator
+            from diffpy.cmipdf.pdfgenerator import PDFGenerator
 
             gen = PDFGenerator(name)
         else:
-            from diffpy.srfit.pdf.debyepdfgenerator import DebyePDFGenerator
+            from diffpy.cmipdf.debyepdfgenerator import DebyePDFGenerator
 
             gen = DebyePDFGenerator(name)
 
@@ -241,11 +241,11 @@ class PDFContribution(FitContribution):
         """
         # Based on periodic, create the proper generator.
         if periodic:
-            from diffpy.srfit.pdf.pdfgenerator import PDFGenerator
+            from diffpy.cmipdf.pdfgenerator import PDFGenerator
 
             gen = PDFGenerator(name)
         else:
-            from diffpy.srfit.pdf.debyepdfgenerator import DebyePDFGenerator
+            from diffpy.cmipdf.debyepdfgenerator import DebyePDFGenerator
 
             gen = DebyePDFGenerator(name)
 
