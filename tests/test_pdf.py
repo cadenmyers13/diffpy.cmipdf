@@ -26,7 +26,7 @@ import pytest
 from diffpy.cmipdf import PDFContribution, PDFGenerator
 from diffpy.srfit.exceptions import SrFitError
 from diffpy.srfit.fitbase import ProfileParser
-from diffpy.structure import Structure
+from diffpy.structure import Structure, loadStructure
 
 # ----------------------------------------------------------------------------
 
@@ -203,11 +203,8 @@ def testGenerator(
     return
 
 
-def test_set_qmin(diffpy_structure_available, diffpy_srreal_available):
+def test_set_qmin():
     """Verify qmin is propagated to the calculator object."""
-    if not diffpy_srreal_available:
-        pytest.skip("diffpy.srreal package not available")
-
     gen = PDFGenerator()
     assert 0 == gen.get_qmin()
     assert 0 == gen._calc.qmin
@@ -229,25 +226,18 @@ def test_setQmax():
     return
 
 
-def test_get_qmax(diffpy_structure_available, diffpy_srreal_available):
+def test_get_qmax():
     """Check PDFContribution.get_qmax()"""
-    if not diffpy_structure_available:
-        pytest.skip("diffpy.structure package not available")
-    from diffpy.structure import Structure
-
-    if not diffpy_srreal_available:
-        pytest.skip("diffpy.srreal package not available")
-
     # cover all code branches in PDFContribution._get_meta_value
     # (1) contribution metadata
     pc1 = PDFContribution("pdf")
     assert pc1.get_qmax() is None
-    pc1.setQmax(17)
+    pc1.set_qmax(17)
     assert 17 == pc1.get_qmax()
     # (2) contribution metadata
     pc2 = PDFContribution("pdf")
     pc2.addStructure("empty", Structure())
-    pc2.empty.setQmax(18)
+    pc2.empty.set_qmax(18)
     assert 18 == pc2.get_qmax()
     # (3) profile metadata
     pc3 = PDFContribution("pdf")
@@ -286,13 +276,6 @@ def test_pickling(
     diffpy_structure_available, diffpy_srreal_available, datafile
 ):
     "validate PDFContribution.residual() after pickling."
-    if not diffpy_structure_available:
-        pytest.skip("diffpy.structure package not available")
-    from diffpy.structure import loadStructure
-
-    if not diffpy_srreal_available:
-        pytest.skip("diffpy.srreal package not available")
-
     pc = PDFContribution("pdf")
     pc.loadData(datafile("ni-q27r100-neutron.gr"))
     ciffile = datafile("ni.cif")
