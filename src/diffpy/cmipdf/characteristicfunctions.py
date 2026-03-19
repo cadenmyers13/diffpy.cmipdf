@@ -28,7 +28,7 @@ using the 'register_function' method of that class.
 __all__ = [
     "spherical_particle",
     "spheroidal_particle",
-    "lognormalSphericalCF",
+    "lognormal_spherical_distribution",
     "sheetCF",
     "shellCF",
     "shellCF2",
@@ -207,22 +207,24 @@ def _calculate_spheroidal_cf(r, d_equatorial, axis_ratio):
     return f
 
 
-def lognormalSphericalCF(r, psize, psig):
+def lognormal_spherical_distribution(radial_dist, p_diameter, p_sigma):
     """Spherical nanoparticle characteristic function with lognormal
     size distribution.
 
     Parameters
     ----------
-    r
-        distance of interaction
-    psize
-        The mean particle diameter
-    psig
-        The log-normal width of the particle diameter
+    radial_dist : float or array-like
+        The distance of interaction.
+    p_diameter : float
+        The mean particle diameter.
+    p_sigma : float
+        The log-normal width of the particle diameter.
 
 
-    Here, r is the independent variable, mu is the mean of the distribution
-    (not of the particle size), and s is the width of the distribution. This is
+    Here, radial_dist is the independent variable, mu is the mean of the
+    distribution
+    (not of the particle size), and s is the width of the distribution.
+    This is
     the characteristic function for the lognormal distribution of particle
     diameter:
 
@@ -231,36 +233,36 @@ def lognormalSphericalCF(r, psize, psig):
                - 0.75*r*Erfc((-mu-2*s^2+Log(r))/(sqrt(2)*s))*exp(-mu-2.5*s^2)
 
     The expectation value of the distribution gives the average particle
-    diameter, psize. The variance of the distribution gives psig^2. mu and s
-    can be expressed in terms of these as:
+    diameter, p_diameter. The variance of the distribution gives p_sigma^2.
+    mu and s can be expressed in terms of these as:
 
-    s^2 = log((psig/psize)^2 + 1)
-    mu = log(psize) - s^2/2
+    s^2 = log((p_sigma/p_diameter)^2 + 1)
+    mu = log(p_diameter) - s^2/2
 
     Source unknown
     """
-    if psize <= 0:
-        return numpy.zeros_like(r)
-    if psig <= 0:
-        return spherical_particle(r, psize)
+    if p_diameter <= 0:
+        return numpy.zeros_like(radial_dist)
+    if p_sigma <= 0:
+        return spherical_particle(radial_dist, p_diameter)
 
     sqrt2 = sqrt(2.0)
-    s = sqrt(log(psig * psig / (1.0 * psize * psize) + 1))
-    mu = log(psize) - s * s / 2
+    s = sqrt(log(p_sigma * p_sigma / (1.0 * p_diameter * p_diameter) + 1))
+    mu = log(p_diameter) - s * s / 2
     if mu < 0:
-        return numpy.zeros_like(r)
+        return numpy.zeros_like(radial_dist)
 
     return (
-        0.5 * erfc((-mu - 3 * s * s + log(r)) / (sqrt2 * s))
+        0.5 * erfc((-mu - 3 * s * s + log(radial_dist)) / (sqrt2 * s))
         + 0.25
-        * r
-        * r
-        * r
-        * erfc((-mu + log(r)) / (sqrt2 * s))
+        * radial_dist
+        * radial_dist
+        * radial_dist
+        * erfc((-mu + log(radial_dist)) / (sqrt2 * s))
         * exp(-3 * mu - 4.5 * s * s)
         - 0.75
-        * r
-        * erfc((-mu - 2 * s * s + log(r)) / (sqrt2 * s))
+        * radial_dist
+        * erfc((-mu - 2 * s * s + log(radial_dist)) / (sqrt2 * s))
         * exp(-mu - 2.5 * s * s)
     )
 
