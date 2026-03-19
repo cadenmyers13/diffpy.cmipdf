@@ -25,7 +25,11 @@ for its use.
 
 __all__ = ["PDFGenerator"]
 
+from pathlib import Path
+
 from diffpy.cmipdf.basepdfgenerator import BasePDFGenerator
+from diffpy.srreal.pdfcalculator import PDFCalculator
+from diffpy.structure import loadStructure
 
 
 class PDFGenerator(BasePDFGenerator):
@@ -86,11 +90,98 @@ class PDFGenerator(BasePDFGenerator):
 
     def __init__(self, name="pdf"):
         """Initialize the generator."""
-        from diffpy.srreal.pdfcalculator import PDFCalculator
-
         BasePDFGenerator.__init__(self, name)
         self._set_calculator(PDFCalculator())
         return
+
+    def generate_pdf_from_structure(
+        self,
+        structure,
+        rmin=0,
+        rmax=30,
+        qmin=0.1,
+        qmax=25.0,
+        qdamp=0.03,
+        qbroad=0.0,
+        delta1=0.0,
+        delta2=0.0,
+        uiso=0.007,
+    ):
+        """Calculate the PDF from a structure and return G vs. r.
+
+        This is a convenience method that allows the user to calculate
+        the PDF from a
+        structure without having to set up the calculator and
+        structure ParameterSet
+        manually. The structure can be passed as a path to a
+        structure file or as a
+        `diffpy.structure.Structure` object.
+
+        Parameters
+        ----------
+        structure : Path, str, or diffpy.structure.Structure
+            The structure to calculate the PDF from. Can be a path
+            to a structure file or a diffpy.structure.Structure
+            object.
+        rmin : float, optional
+            The minimum r value in Angstroms for the PDF (default 0).
+        rmax : float, optional
+            The maximum r value in Angstroms for the PDF (default 30).
+        qmin : float, optional
+            The minimum scattering vector used to generate the PDF
+            (default 0.1).
+        qmax : float, optional
+            The maximum scattering vector used to generate the PDF
+            (default 25.0).
+        qdamp : float, optional
+            The resolution dampening term to use in the PDF calculation
+            (default 0.03).
+        qbroad : float, optional
+            The resolution broadening term to use in the PDF calculation
+            (default 0.0).
+        delta1 : float, optional
+            The linear peak broadening term to use in the PDF calculation
+            (default 0.0).
+        delta2 : float, optional
+            The quadratic peak broadening term to use in the PDF calculation
+            (default 0.0).
+        uiso : float, optional
+            The isotropic atomic displacement parameter to use for all
+            atoms in the structure (default 0.007).
+
+        Returns
+        -------
+        r : numpy.ndarray
+            The r values for the PDF in units of Angstroms.
+        G : numpy.ndarray
+            The G values for the PDF in units of 1/Angstrom^2.
+
+        Example
+        -------
+        .. code-block:: python
+            cif_path = "path/to/ni.cif"
+            gen = PDFGenerator()
+            r, g = gen.generate_pdf_from_structure(cifpath)
+        """
+        if isinstance(structure, Path):
+            structure = loadStructure(str(structure))
+        elif isinstance(structure, str):
+            structure = loadStructure(structure)
+        structure.Uisoequiv = uiso
+
+        calc = PDFCalculator()
+        calc.qmin = qmin
+        calc.qmax = qmax
+        calc.rstep = 0.01
+        calc.rmin = rmin
+        calc.rmax = rmax
+        calc.qdamp = qdamp
+        calc.qbroad = qbroad
+        calc.delta1 = delta1
+        calc.delta2 = delta2
+
+        r, g = calc(structure)
+        return r, g
 
 
 # End class PDFGenerator
