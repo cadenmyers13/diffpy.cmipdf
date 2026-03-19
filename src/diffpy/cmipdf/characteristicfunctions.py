@@ -26,9 +26,8 @@ using the 'register_function' method of that class.
 """
 
 __all__ = [
-    "sphericalCF",
-    "spheroidalCF",
-    "spheroidalCF2",
+    "spherical_particle",
+    "spheroidal_particle",
     "lognormalSphericalCF",
     "sheetCF",
     "shellCF",
@@ -46,86 +45,91 @@ from scipy.special import erf
 from diffpy.srfit.fitbase.calculator import Calculator
 
 
-def sphericalCF(r, psize):
+def spherical_particle(radial_dist, p_diameter):
     """Spherical nanoparticle characteristic function.
 
     Parameters
     ----------
-    r
-        distance of interaction
-    psize
-        The particle diameter
+    radial_dist : float or array-like
+        The distance of interaction.
+    p_diameter : float
+        The particle diameter.
 
 
     From Kodama et al., Acta Cryst. A, 62, 444-453
     (converted from radius to diameter)
     """
-    f = numpy.zeros(numpy.shape(r), dtype=float)
-    if psize > 0:
-        x = numpy.array(r, dtype=float) / psize
+    f = numpy.zeros(numpy.shape(radial_dist), dtype=float)
+    if p_diameter > 0:
+        x = numpy.array(radial_dist, dtype=float) / p_diameter
         inside = x < 1.0
         xin = x[inside]
         f[inside] = 1.0 - 1.5 * xin + 0.5 * xin * xin * xin
     return f
 
 
-def spheroidalCF(r, erad, prad):
+def spheroidal_particle(radial_dist, r_equatorial, r_polar):
     """Spheroidal characteristic function specified using radii.
 
-    Spheroid with radii (erad, erad, prad)
+    Spheroid with radii (r_equatorial, r_equatorial, r_polar)
 
     Parameters
     ----------
-    prad
-        polar radius
-    erad
-        equatorial radius
+    radial_dist : float or array-like
+        The distance of interaction.
+    r_polar : float
+        The polar radius of the spheroid.
+    r_equatorial
+        The equatorial radius of the spheroid.
 
 
-    erad < prad equates to a prolate spheroid
-    erad > prad equates to a oblate spheroid
-    erad == prad is a sphere
+    Note
+    ----
+    - `r_equatorial < r_polar` equates to a prolate spheroid
+    - `r_equatorial > r_polar` equates to a oblate spheroid
+    - `r_equatorial == r_polar` is a sphere
     """
-    psize = 2.0 * erad
-    pelpt = 1.0 * prad / erad
-    return spheroidalCF2(r, psize, pelpt)
+    d_equatorial = 2.0 * r_equatorial
+    pelpt = 1.0 * r_polar / r_equatorial
+    return _calculate_spheroidal_cf(radial_dist, d_equatorial, pelpt)
 
 
-def spheroidalCF2(r, psize, axrat):
-    """Spheroidal nanoparticle characteristic function.
+def _calculate_spheroidal_cf(r, d_equatorial, axis_ratio):
+    """Calculate the spheroidal nanoparticle characteristic function.
 
-    Form factor for ellipsoid with radii (psize/2, psize/2, axrat*psize/2)
+    Form factor for ellipsoid with radii
+    (d_equatorial/2, d_equatorial/2, axis_ratio*d_equatorial/2)
 
     Parameters
     ----------
-    r
-        distance of interaction
-    psize
+    r : float or array-like
+        The distance of interaction
+    d_equatorial : float
         The equatorial diameter
-    axrat
+    axis_ratio : float
         The ratio of axis lengths
 
 
     From Lei et al., Phys. Rev. B, 80, 024118 (2009)
     """
-    pelpt = 1.0 * axrat
+    pelpt = 1.0 * axis_ratio
 
-    if psize <= 0 or pelpt <= 0:
+    if d_equatorial <= 0 or pelpt <= 0:
         return numpy.zeros_like(r)
 
     # to simplify the equations
     v = pelpt
-    d = 1.0 * psize
+    d = 1.0 * d_equatorial
     d2 = d * d
     v2 = v * v
 
     if v == 1:
-        return sphericalCF(r, psize)
+        return spherical_particle(r, d_equatorial)
 
     rx = r
     if v < 1:
 
-        r = rx[rx <= v * psize]
+        r = rx[rx <= v * d_equatorial]
         r2 = r * r
         f1 = (
             1
@@ -139,7 +143,7 @@ def spheroidalCF2(r, psize, axrat):
             * atanh(sqrt(1 - v2))
         )
 
-        r = rx[numpy.logical_and(rx > v * psize, rx <= psize)]
+        r = rx[numpy.logical_and(rx > v * d_equatorial, rx <= d_equatorial)]
         r2 = r * r
         f2 = (
             (
@@ -154,14 +158,14 @@ def spheroidalCF2(r, psize, axrat):
             / sqrt(1 - v2)
         )
 
-        r = rx[rx > psize]
+        r = rx[rx > d_equatorial]
         f3 = numpy.zeros_like(r)
 
         f = numpy.concatenate((f1, f2, f3))
 
     elif v > 1:
 
-        r = rx[rx <= psize]
+        r = rx[rx <= d_equatorial]
         r2 = r * r
         f1 = (
             1
@@ -175,7 +179,7 @@ def spheroidalCF2(r, psize, axrat):
             * atan(sqrt(v2 - 1))
         )
 
-        r = rx[numpy.logical_and(rx > psize, rx <= v * psize)]
+        r = rx[numpy.logical_and(rx > d_equatorial, rx <= v * d_equatorial)]
         r2 = r * r
         f2 = (
             1
@@ -195,7 +199,7 @@ def spheroidalCF2(r, psize, axrat):
             * (atan(sqrt(v2 - 1)) - atan(sqrt(r2 / d2 - 1)))
         )
 
-        r = rx[rx > v * psize]
+        r = rx[rx > v * d_equatorial]
         f3 = numpy.zeros_like(r)
 
         f = numpy.concatenate((f1, f2, f3))
@@ -238,7 +242,7 @@ def lognormalSphericalCF(r, psize, psig):
     if psize <= 0:
         return numpy.zeros_like(r)
     if psig <= 0:
-        return sphericalCF(r, psize)
+        return spherical_particle(r, psize)
 
     sqrt2 = sqrt(2.0)
     s = sqrt(log(psig * psig / (1.0 * psize * psize) + 1))
@@ -419,7 +423,8 @@ class SASCF(Calculator):
         #
         # The initial dr is somewhat arbitrary, but using dr = 0.01 allows for
         # the f(r) calculated from a particle of diameter 50, over r =
-        # arange(1, 60, 0.1) to agree with the sphericalCF with Rw < 1e-4%.
+        # arange(1, 60, 0.1) to agree with the spherical_particle with
+        # Rw < 1e-4%.
         #
         # We also have to make a q-spacing small enough to compute out to at
         # least the size of the signal.

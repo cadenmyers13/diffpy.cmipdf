@@ -292,12 +292,12 @@ class BasePDFGenerator(ProfileGenerator):
 
         Parameters
         ----------
-        parset
-            A SrRealParSet that holds the structural information.
+        parset : SrRealParSet
+            The SrRealParSet that holds the structural information.
             This can be used to share the phase between multiple
             BasePDFGenerators, and have the changes in one reflect in
             another.
-        periodic
+        periodic : bool, optional
             The structure should be treated as periodic (default True).
             Note that some structures do not support periodicity, in
             which case this will be ignored.
