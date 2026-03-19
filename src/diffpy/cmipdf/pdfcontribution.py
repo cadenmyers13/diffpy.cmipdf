@@ -21,6 +21,8 @@ fits.
 
 __all__ = ["PDFContribution"]
 
+from diffpy.cmipdf.debyepdfgenerator import DebyePDFGenerator
+from diffpy.cmipdf.pdfgenerator import PDFGenerator
 from diffpy.srfit.fitbase import FitContribution, Profile, ProfileParser
 
 
@@ -106,7 +108,7 @@ class PDFContribution(FitContribution):
 
     # Data methods
 
-    def loadData(self, datafile):
+    def load_data(self, datafile):
         """Load the data from a datafile.
 
         Parameters
@@ -121,7 +123,7 @@ class PDFContribution(FitContribution):
         self.profile.load_parsed_data(parser)
         return
 
-    def setCalculationRange(self, xmin=None, xmax=None, dx=None):
+    def set_calculation_range(self, xmin=None, xmax=None, dx=None):
         """Set epsilon-inclusive calculation range.
 
         Adhere to the observed ``xobs`` points when ``dx`` is the same
@@ -166,24 +168,24 @@ class PDFContribution(FitContribution):
 
     # Phase methods
 
-    def addStructure(self, name, structure, periodic=True):
+    def add_structure(self, structure, name="phase", periodic=True):
         """Add a phase that goes into the PDF calculation.
 
         Parameters
         ----------
-        name
+        structure : Structure object
+            `diffpy.structure.Structure`, `pyobjcryst.crystal.Crystal` or
+            `pyobjcryst.molecule.Molecule` instance.
+        name : str, optional
             A name to give the generator that will manage the PDF
             calculation from the passed structure. The adapted
             structure will be accessible via the name "phase" as an
             attribute of the generator, e.g.
             contribution.name.phase, where 'contribution' is this
             contribution and 'name' is passed name.
-            (default), then the name will be set as "phase".
-        structure
-            diffpy.structure.Structure, pyobjcryst.crystal.Crystal or
-            pyobjcryst.molecule.Molecule instance.  Default None.
-        periodic
-            The structure should be treated as periodic.  If this is
+            Default is `"phase"`.
+        periodic : bool, optional
+            The structure should be treated as periodic. If this is
             True (default), then a PDFGenerator will be used to
             calculate the PDF from the phase. Otherwise, a
             DebyePDFGenerator will be used. Note that some structures
@@ -191,17 +193,15 @@ class PDFContribution(FitContribution):
             ignored.
 
 
-        Returns the new phase (ParameterSet appropriate for what was passed in
-        structure.)
+        Returns
+        -------
+            The new phase (ParameterSet appropriate for what was passed in
+            structure.)
         """
         # Based on periodic, create the proper generator.
         if periodic:
-            from diffpy.cmipdf.pdfgenerator import PDFGenerator
-
             gen = PDFGenerator(name)
         else:
-            from diffpy.cmipdf.debyepdfgenerator import DebyePDFGenerator
-
             gen = DebyePDFGenerator(name)
 
         # Set up the generator
@@ -210,24 +210,25 @@ class PDFContribution(FitContribution):
 
         return gen.phase
 
-    def addPhase(self, name, parset, periodic=True):
-        """Add a phase that goes into the PDF calculation.
+    def add_structure_from_parset(self, parset, name, periodic=True):
+        """Add a phase that goes into the PDF calculation from a
+        ParameterSet.
 
         Parameters
         ----------
-        name
-            A name to give the generator that will manage the PDF
+        parset : SrealParSet object
+            A SrRealParSet that holds the structural information.
+            This can be used to share the phase between multiple
+            BasePDFGenerators, and have the changes in one reflect in
+            another.
+        name : str
+            The name to give the generator that will manage the PDF
             calculation from the passed parameter phase. The parset
             will be accessible via the name "phase" as an attribute
             of the generator, e.g., contribution.name.phase, where
             'contribution' is this contribution and 'name' is passed
             name.
-        parset
-            A SrRealParSet that holds the structural information.
-            This can be used to share the phase between multiple
-            BasePDFGenerators, and have the changes in one reflect in
-            another.
-        periodic
+        periodic : bool, optional
             The structure should be treated as periodic.  If this is
             True (default), then a PDFGenerator will be used to
             calculate the PDF from the phase. Otherwise, a
@@ -235,24 +236,19 @@ class PDFContribution(FitContribution):
             do not support periodicity, in which case this may be
             ignored.
 
-
-        Returns the new phase (ParameterSet appropriate for what was passed in
-        structure.)
+        Returns
+        -------
+            The new phase (ParameterSet appropriate for what was passed in
+            parset.)
         """
         # Based on periodic, create the proper generator.
         if periodic:
-            from diffpy.cmipdf.pdfgenerator import PDFGenerator
-
             gen = PDFGenerator(name)
         else:
-            from diffpy.cmipdf.debyepdfgenerator import DebyePDFGenerator
-
             gen = DebyePDFGenerator(name)
-
         # Set up the generator
         gen.set_structure_from_parset(parset, periodic)
         self._setup_generator(gen)
-
         return gen.phase
 
     def _setup_generator(self, gen):

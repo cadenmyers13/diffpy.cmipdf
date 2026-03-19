@@ -210,7 +210,7 @@ def test_setQmax():
     """Check PDFContribution.setQmax()"""
     pc = PDFContribution("pdf")
     pc.set_qmax(21)
-    pc.addStructure("empty", Structure())
+    pc.add_structure(Structure(), name="empty")
     assert 21 == pc.empty.get_qmax()
     pc.set_qmax(22)
     assert 22 == pc.get_qmax()
@@ -228,7 +228,7 @@ def test_get_qmax():
     assert 17 == pc1.get_qmax()
     # (2) contribution metadata
     pc2 = PDFContribution("pdf")
-    pc2.addStructure("empty", Structure())
+    pc2.add_structure(Structure(), name="empty")
     pc2.empty.set_qmax(18)
     assert 18 == pc2.get_qmax()
     # (3) profile metadata
@@ -242,17 +242,12 @@ def test_savetxt(
     diffpy_structure_available, diffpy_srreal_available, datafile
 ):
     "check PDFContribution.savetxt()"
-    if not diffpy_structure_available:
-        pytest.skip("diffpy.structure package not available")
     from diffpy.structure import Structure
 
-    if not diffpy_srreal_available:
-        pytest.skip("diffpy.srreal package not available")
-
     pc = PDFContribution("pdf")
-    pc.loadData(datafile("si-q27r60-xray.gr"))
-    pc.setCalculationRange(0, 10)
-    pc.addStructure("empty", Structure())
+    pc.load_data(datafile("si-q27r60-xray.gr"))
+    pc.set_calculation_range(0, 10)
+    pc.add_structure(Structure(), name="empty")
     fp = io.BytesIO()
     with pytest.raises(SrFitError):
         pc.savetxt(fp)
@@ -269,13 +264,13 @@ def test_pickling(
 ):
     "validate PDFContribution.residual() after pickling."
     pc = PDFContribution("pdf")
-    pc.loadData(datafile("ni-q27r100-neutron.gr"))
+    pc.load_data(datafile("ni-q27r100-neutron.gr"))
     ciffile = datafile("ni.cif")
     cif_path = str(ciffile)
     ni = loadStructure(cif_path)
     ni.Uisoequiv = 0.003
-    pc.addStructure("ni", ni)
-    pc.setCalculationRange(0, 10)
+    pc.add_structure(ni, name="ni")
+    pc.set_calculation_range(0, 10)
     pc2 = pickle.loads(pickle.dumps(pc))
     res0 = pc.residual()
     assert numpy.array_equal(res0, pc2.residual())
