@@ -30,7 +30,7 @@ __all__ = [
     "spheroidal_particle",
     "lognormal_spherical_distribution",
     "sheet_particle",
-    "shellCF",
+    "spherical_shell",
     "shellCF2",
     "SASCF",
 ]
@@ -297,24 +297,26 @@ def sheet_particle(r, thickness):
     return f
 
 
-def shellCF(r, radius, thickness):
+def spherical_shell(radial_dist, inner_radius, thickness):
     """Spherical shell characteristic function.
 
     Parameters
     ----------
-    radius
-        Inner radius
-    thickness
-        Thickness of shell
+    radial_dist : float or array-like
+        The distance of interaction.
+    inner_radius : float
+        The inner radius of the shell.
+    thickness : float
+        The thickness of shell.
 
 
-    outer radius = radius + thickness
+    outer radius = inner_radius + thickness
 
     From Lei et al., Phys. Rev. B, 80, 024118 (2009)
     """
     d = 1.0 * thickness
-    a = 1.0 * radius + d / 2.0
-    return shellCF2(r, a, d)
+    a = 1.0 * inner_radius + d / 2.0
+    return shellCF2(radial_dist, a, d)
 
 
 def shellCF2(r, a, delta):
