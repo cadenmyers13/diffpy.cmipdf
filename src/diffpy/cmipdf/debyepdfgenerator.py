@@ -96,13 +96,13 @@ class DebyePDFGenerator(BasePDFGenerator):
 
         Parameters
         ----------
-        structure
-            diffpy.structure.Structure, pyobjcryst.crystal.Crystal or
-            pyobjcryst.molecule.Molecule instance.  Default None.
-        name
+        structure : Structure object
+            The `diffpy.structure.Structure`, `pyobjcryst.crystal.Crystal` or
+            `pyobjcryst.molecule.Molecule` instance.
+        name : str, optional
             A name to give to the managed ParameterSet that adapts structure
             (default "phase").
-        periodic
+        periodic : bool, optional
             The structure should be treated as periodic (default
             False). Note that some structures do not support
             periodicity, in which case this will have no effect on the
@@ -120,12 +120,12 @@ class DebyePDFGenerator(BasePDFGenerator):
 
         Parameters
         ----------
-        parset
-            A SrRealParSet that holds the structural information.
+        parset : SrealParSet object
+            The SrRealParSet that holds the structural information.
             This can be used to share the phase between multiple
             BasePDFGenerators, and have the changes in one reflect in
             another.
-        periodic
+        periodic : bool, optional
             The structure should be treated as periodic (default True).
             Note that some structures do not support periodicity, in
             which case this will be ignored.

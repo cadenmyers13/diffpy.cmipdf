@@ -25,7 +25,8 @@ import pytest
 from diffpy.cmipdf import PDFContribution, PDFGenerator
 from diffpy.srfit.exceptions import SrFitError
 from diffpy.srfit.fitbase import ProfileParser
-from diffpy.structure import Structure, loadStructure
+from diffpy.srreal.pdfcalculator import PDFCalculator
+from diffpy.structure import PDFFitStructure, Structure, loadStructure
 
 # ----------------------------------------------------------------------------
 
@@ -145,14 +146,6 @@ def testParser2(datafile):
 def testGenerator(
     diffpy_srreal_available, diffpy_structure_available, datafile
 ):
-    if not diffpy_structure_available:
-        pytest.skip("diffpy.structure package not available")
-    if not diffpy_srreal_available:
-        pytest.skip("diffpy.srreal package not available")
-
-    from diffpy.srreal.pdfcalculator import PDFCalculator
-    from diffpy.structure import PDFFitStructure
-
     qmax = 27.0
     gen = PDFGenerator()
     gen.set_scattering_type("N")
