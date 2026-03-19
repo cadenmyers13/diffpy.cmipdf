@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 ##############################################################################
 #
-# (c) 2025 Simon Billinge.
-# All rights reserved.
+# diffpy.srfit      by DANSE Diffraction group
+#                   Simon J. L. Billinge
+#                   (c) 2010 The Trustees of Columbia University
+#                   in the City of New York.  All rights reserved.
 #
-# File coded by: Caden Myers, Simon Billinge, and members of the Billinge
-#                group.
+# File coded by:    Pavol Juhas
 #
-# See GitHub contributions for a more detailed list of contributors.
-# https://github.com/diffpy/diffpy.cmipdf/graphs/contributors
-#
-# See LICENSE.rst for license information.
+# See AUTHORS.txt for a list of people who contributed.
+# See LICENSE_DANSE.txt for license information.
 #
 ##############################################################################
 """Tests for pdf package."""
@@ -23,21 +22,21 @@ from itertools import chain
 import numpy
 import pytest
 
-from diffpy.cmipdf import PDFContribution, PDFGenerator
 from diffpy.srfit.exceptions import SrFitError
 from diffpy.srfit.fitbase import ProfileParser
+from diffpy.srfit.pdf import PDFContribution, PDFGenerator, PDFParser
 
 # ----------------------------------------------------------------------------
 
 
 def testParser1(datafile):
-    filename = datafile("ni-q27r100-neutron.gr")
-    parser = ProfileParser()
-    parser.parse_file(filename)
+    data = datafile("ni-q27r100-neutron.gr")
+    parser = PDFParser()
+    parser.parseFile(data)
 
     meta = parser._meta
 
-    assert str(filename) == meta["filename"]
+    assert data == meta["filename"]
     assert 1 == meta["nbanks"]
     assert "N" == meta["stype"]
     assert 27 == meta["qmax"]
@@ -49,8 +48,8 @@ def testParser1(datafile):
     assert meta.get("doping") is None
 
     x, y, dx, dy = parser.get_data()
-    assert dx.tolist() == len(x) * [0]
-    assert dy.tolist() == len(x) * [0]
+    assert dx is None
+    assert dy is None
 
     testx = numpy.linspace(0.01, 100, 10000)
     diff = testx - x
@@ -155,18 +154,18 @@ def testGenerator(
 
     qmax = 27.0
     gen = PDFGenerator()
-    gen.set_scattering_type("N")
-    assert "N" == gen.get_scattering_type()
-    gen.set_qmax(qmax)
-    assert qmax == pytest.approx(gen.get_qmax())
+    gen.setScatteringType("N")
+    assert "N" == gen.getScatteringType()
+    gen.setQmax(qmax)
+    assert qmax == pytest.approx(gen.getQmax())
 
-    structure = PDFFitStructure()
+    stru = PDFFitStructure()
     ciffile = datafile("ni.cif")
     cif_path = str(ciffile)
-    structure.read(cif_path)
+    stru.read(cif_path)
     for i in range(4):
-        structure[i].Bisoequiv = 1
-    gen.set_structure(structure)
+        stru[i].Bisoequiv = 1
+    gen.setStructure(stru)
 
     calc = gen._calc
     # Test parameters
@@ -193,7 +192,7 @@ def testGenerator(
     calc.rmax = r[-1] + 0.5 * calc.rstep
     calc.qmax = qmax
     calc.setScatteringFactorTableByType("N")
-    calc.eval(structure)
+    calc.eval(stru)
     yref = calc.pdf
 
     diff = y - yref
@@ -202,16 +201,16 @@ def testGenerator(
     return
 
 
-def test_set_qmin(diffpy_structure_available, diffpy_srreal_available):
+def test_setQmin(diffpy_structure_available, diffpy_srreal_available):
     """Verify qmin is propagated to the calculator object."""
     if not diffpy_srreal_available:
         pytest.skip("diffpy.srreal package not available")
 
     gen = PDFGenerator()
-    assert 0 == gen.get_qmin()
+    assert 0 == gen.getQmin()
     assert 0 == gen._calc.qmin
-    gen.set_qmin(0.93)
-    assert 0.93 == gen.get_qmin()
+    gen.setQmin(0.93)
+    assert 0.93 == gen.getQmin()
     assert 0.93 == gen._calc.qmin
     return
 
@@ -228,15 +227,15 @@ def test_setQmax(diffpy_structure_available, diffpy_srreal_available):
     pc = PDFContribution("pdf")
     pc.setQmax(21)
     pc.addStructure("empty", Structure())
-    assert 21 == pc.empty.get_qmax()
+    assert 21 == pc.empty.getQmax()
     pc.setQmax(22)
-    assert 22 == pc.get_qmax()
-    assert 22 == pc.empty.get_qmax()
+    assert 22 == pc.getQmax()
+    assert 22 == pc.empty.getQmax()
     return
 
 
-def test_get_qmax(diffpy_structure_available, diffpy_srreal_available):
-    """Check PDFContribution.get_qmax()"""
+def test_getQmax(diffpy_structure_available, diffpy_srreal_available):
+    """Check PDFContribution.getQmax()"""
     if not diffpy_structure_available:
         pytest.skip("diffpy.structure package not available")
     from diffpy.structure import Structure
@@ -247,18 +246,18 @@ def test_get_qmax(diffpy_structure_available, diffpy_srreal_available):
     # cover all code branches in PDFContribution._get_meta_value
     # (1) contribution metadata
     pc1 = PDFContribution("pdf")
-    assert pc1.get_qmax() is None
+    assert pc1.getQmax() is None
     pc1.setQmax(17)
-    assert 17 == pc1.get_qmax()
+    assert 17 == pc1.getQmax()
     # (2) contribution metadata
     pc2 = PDFContribution("pdf")
     pc2.addStructure("empty", Structure())
     pc2.empty.setQmax(18)
-    assert 18 == pc2.get_qmax()
+    assert 18 == pc2.getQmax()
     # (3) profile metadata
     pc3 = PDFContribution("pdf")
     pc3.profile.meta["qmax"] = 19
-    assert 19 == pc3.get_qmax()
+    assert 19 == pc3.getQmax()
     return
 
 
