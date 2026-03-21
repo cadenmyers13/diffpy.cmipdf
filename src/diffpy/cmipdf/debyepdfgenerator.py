@@ -23,7 +23,9 @@ isolated scatterers, such as nanoparticles and molecules.
 
 __all__ = ["DebyePDFGenerator"]
 
+
 from diffpy.cmipdf.basepdfgenerator import BasePDFGenerator
+from diffpy.srreal.pdfcalculator import DebyePDFCalculator
 
 
 class DebyePDFGenerator(BasePDFGenerator):
@@ -39,7 +41,7 @@ class DebyePDFGenerator(BasePDFGenerator):
         DebyePDFCalculator instance for calculating the PDF
     _phase
         The structure ParameterSets used to calculate the profile.
-    stru
+    structure
         The structure objected adapted by _phase.
     _lastr
         The last value of r over which the PDF was calculated. This is
@@ -66,13 +68,13 @@ class DebyePDFGenerator(BasePDFGenerator):
     ---------------
     stype
         The scattering type "X" for x-ray, "N" for neutron (see
-        'setScatteringType').
+        'set_scattering_type').
     qmax
         The maximum scattering vector used to generate the PDF (see
-        setQmax).
+        set_qmax).
     qmin
         The minimum scattering vector used to generate the PDF (see
-        setQmin).
+        set_qmin).
     scale
         See Managed Parameters.
     delta1
@@ -85,31 +87,32 @@ class DebyePDFGenerator(BasePDFGenerator):
         See Managed Parameters.
     """
 
-    def setStructure(self, stru, name="phase", periodic=False):
+    def set_structure(self, structure, name="phase", periodic=False):
         """Set the structure that will be used to calculate the PDF.
 
         This creates a DiffpyStructureParSet, ObjCrystCrystalParSet or
-        ObjCrystMoleculeParSet that adapts stru to a ParameterSet interface.
+        ObjCrystMoleculeParSet that adapts structure to a ParameterSet
+        interface.
         See those classes (located in diffpy.srfit.structure) for how they are
         used. The resulting ParameterSet will be managed by this generator.
 
-        Attributes
+        Parameters
         ----------
-        stru
-            diffpy.structure.Structure, pyobjcryst.crystal.Crystal or
-            pyobjcryst.molecule.Molecule instance.  Default None.
-        name
-            A name to give to the managed ParameterSet that adapts stru
+        structure : Structure object
+            The `diffpy.structure.Structure`, `pyobjcryst.crystal.Crystal` or
+            `pyobjcryst.molecule.Molecule` instance.
+        name : str, optional
+            A name to give to the managed ParameterSet that adapts structure
             (default "phase").
-        periodic
+        periodic : bool, optional
             The structure should be treated as periodic (default
             False). Note that some structures do not support
             periodicity, in which case this will have no effect on the
             PDF calculation.
         """
-        return BasePDFGenerator.setStructure(self, stru, name, periodic)
+        return BasePDFGenerator.set_structure(self, structure, name, periodic)
 
-    def setPhase(self, parset, periodic=False):
+    def set_structure_from_parset(self, parset, periodic=False):
         """Set the phase that will be used to calculate the PDF.
 
         Set the phase directly with a DiffpyStructureParSet,
@@ -117,26 +120,26 @@ class DebyePDFGenerator(BasePDFGenerator):
         object (from diffpy or pyobjcryst).  The passed ParameterSet will be
         managed by this generator.
 
-        Attributes
+        Parameters
         ----------
-        parset
-            A SrRealParSet that holds the structural information.
+        parset : SrealParSet object
+            The SrRealParSet that holds the structural information.
             This can be used to share the phase between multiple
             BasePDFGenerators, and have the changes in one reflect in
             another.
-        periodic
+        periodic : bool, optional
             The structure should be treated as periodic (default True).
             Note that some structures do not support periodicity, in
             which case this will be ignored.
         """
-        return BasePDFGenerator.setPhase(self, parset, periodic)
+        return BasePDFGenerator.set_structure_from_parset(
+            self, parset, periodic
+        )
 
     def __init__(self, name="pdf"):
         """Initialize the generator."""
-        from diffpy.srreal.pdfcalculator import DebyePDFCalculator
-
         BasePDFGenerator.__init__(self, name)
-        self._setCalculator(DebyePDFCalculator())
+        self._set_calculator(DebyePDFCalculator())
         return
 
 

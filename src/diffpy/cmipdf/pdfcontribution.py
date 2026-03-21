@@ -21,7 +21,9 @@ fits.
 
 __all__ = ["PDFContribution"]
 
-from diffpy.srfit.fitbase import FitContribution, Profile
+from diffpy.cmipdf.debyepdfgenerator import DebyePDFGenerator
+from diffpy.cmipdf.pdfgenerator import PDFGenerator
+from diffpy.srfit.fitbase import FitContribution, Profile, ProfileParser
 
 
 class PDFContribution(FitContribution):
@@ -30,7 +32,7 @@ class PDFContribution(FitContribution):
     PDFContribution is a FitContribution that is customized for PDF fits. Data
     and phases can be added directly to the PDFContribution. Setup of
     constraints and restraints requires direct interaction with the generator
-    attributes (see setPhase).
+    attributes (see set_structure_from_parset).
 
     Attributes
     ----------
@@ -85,7 +87,7 @@ class PDFContribution(FitContribution):
     def __init__(self, name):
         """Create the PDFContribution.
 
-        Attributes
+        Parameters
         ----------
         name
             The name of the contribution.
@@ -94,7 +96,7 @@ class PDFContribution(FitContribution):
         self._meta = {}
         # Add the profile
         profile = Profile()
-        self.setProfile(profile, xname="r")
+        self.set_profile(profile, xname="r")
 
         # Need a parameter for the overall scale, in the case that this is a
         # multi-phase fit.
@@ -106,34 +108,22 @@ class PDFContribution(FitContribution):
 
     # Data methods
 
-    def loadData(self, data):
-        """Load the data in various formats.
+    def load_data(self, datafile):
+        """Load the data from a datafile.
 
-        This uses the PDFParser to load the data and then passes it to the
-        built-in profile with loadParsedData.
-
-        Attributes
+        Parameters
         ----------
-        data
-            An open file-like object, name of a file that contains data
-            or a string containing the data.
+        data : str or Path
+            The path to the data file.
         """
-        # Get the data into a string
-        from diffpy.srfit.util.inpututils import inputToString
-
-        datstr = inputToString(data)
-
-        # Load data with a PDFParser
-        from diffpy.srfit.pdf.pdfparser import PDFParser
-
-        parser = PDFParser()
-        parser.parseString(datstr)
+        parser = ProfileParser()
+        parser.parse_file(datafile)
 
         # Pass it to the profile
-        self.profile.loadParsedData(parser)
+        self.profile.load_parsed_data(parser)
         return
 
-    def setCalculationRange(self, xmin=None, xmax=None, dx=None):
+    def set_calculation_range(self, xmin=None, xmax=None, dx=None):
         """Set epsilon-inclusive calculation range.
 
         Adhere to the observed ``xobs`` points when ``dx`` is the same
@@ -165,7 +155,7 @@ class PDFContribution(FitContribution):
         ValueError
             When xmin > xmax or if dx <= 0.  Also if dx > xmax - xmin.
         """
-        return self.profile.setCalculationRange(xmin, xmax, dx)
+        return self.profile.set_calculation_range(xmin, xmax, dx)
 
     def savetxt(self, fname, **kwargs):
         """Call numpy.savetxt with x, ycalc, y, dy.
@@ -178,24 +168,24 @@ class PDFContribution(FitContribution):
 
     # Phase methods
 
-    def addStructure(self, name, stru, periodic=True):
+    def add_structure(self, structure, name="phase", periodic=True):
         """Add a phase that goes into the PDF calculation.
 
-        Attributes
+        Parameters
         ----------
-        name
+        structure : Structure object
+            `diffpy.structure.Structure`, `pyobjcryst.crystal.Crystal` or
+            `pyobjcryst.molecule.Molecule` instance.
+        name : str, optional
             A name to give the generator that will manage the PDF
             calculation from the passed structure. The adapted
             structure will be accessible via the name "phase" as an
             attribute of the generator, e.g.
             contribution.name.phase, where 'contribution' is this
             contribution and 'name' is passed name.
-            (default), then the name will be set as "phase".
-        stru
-            diffpy.structure.Structure, pyobjcryst.crystal.Crystal or
-            pyobjcryst.molecule.Molecule instance.  Default None.
-        periodic
-            The structure should be treated as periodic.  If this is
+            Default is `"phase"`.
+        periodic : bool, optional
+            The structure should be treated as periodic. If this is
             True (default), then a PDFGenerator will be used to
             calculate the PDF from the phase. Otherwise, a
             DebyePDFGenerator will be used. Note that some structures
@@ -203,43 +193,42 @@ class PDFContribution(FitContribution):
             ignored.
 
 
-        Returns the new phase (ParameterSet appropriate for what was passed in
-        stru.)
+        Returns
+        -------
+            The new phase (ParameterSet appropriate for what was passed in
+            structure.)
         """
         # Based on periodic, create the proper generator.
         if periodic:
-            from diffpy.srfit.pdf.pdfgenerator import PDFGenerator
-
             gen = PDFGenerator(name)
         else:
-            from diffpy.srfit.pdf.debyepdfgenerator import DebyePDFGenerator
-
             gen = DebyePDFGenerator(name)
 
         # Set up the generator
-        gen.setStructure(stru, "phase", periodic)
-        self._setupGenerator(gen)
+        gen.set_structure(structure, "phase", periodic)
+        self._setup_generator(gen)
 
         return gen.phase
 
-    def addPhase(self, name, parset, periodic=True):
-        """Add a phase that goes into the PDF calculation.
+    def add_structure_from_parset(self, parset, name, periodic=True):
+        """Add a phase that goes into the PDF calculation from a
+        ParameterSet.
 
-        Attributes
+        Parameters
         ----------
-        name
-            A name to give the generator that will manage the PDF
+        parset : SrealParSet object
+            A SrRealParSet that holds the structural information.
+            This can be used to share the phase between multiple
+            BasePDFGenerators, and have the changes in one reflect in
+            another.
+        name : str
+            The name to give the generator that will manage the PDF
             calculation from the passed parameter phase. The parset
             will be accessible via the name "phase" as an attribute
             of the generator, e.g., contribution.name.phase, where
             'contribution' is this contribution and 'name' is passed
             name.
-        parset
-            A SrRealParSet that holds the structural information.
-            This can be used to share the phase between multiple
-            BasePDFGenerators, and have the changes in one reflect in
-            another.
-        periodic
+        periodic : bool, optional
             The structure should be treated as periodic.  If this is
             True (default), then a PDFGenerator will be used to
             calculate the PDF from the phase. Otherwise, a
@@ -247,54 +236,49 @@ class PDFContribution(FitContribution):
             do not support periodicity, in which case this may be
             ignored.
 
-
-        Returns the new phase (ParameterSet appropriate for what was passed in
-        stru.)
+        Returns
+        -------
+            The new phase (ParameterSet appropriate for what was passed in
+            parset.)
         """
         # Based on periodic, create the proper generator.
         if periodic:
-            from diffpy.srfit.pdf.pdfgenerator import PDFGenerator
-
             gen = PDFGenerator(name)
         else:
-            from diffpy.srfit.pdf.debyepdfgenerator import DebyePDFGenerator
-
             gen = DebyePDFGenerator(name)
-
         # Set up the generator
-        gen.setPhase(parset, periodic)
-        self._setupGenerator(gen)
-
+        gen.set_structure_from_parset(parset, periodic)
+        self._setup_generator(gen)
         return gen.phase
 
-    def _setupGenerator(self, gen):
+    def _setup_generator(self, gen):
         """Setup a generator.
 
         The generator must already have a managed SrRealParSet, added
-        with setStructure or setPhase.
+        with set_structure or set_structure_from_parset.
         """
         # Add the generator to this FitContribution
-        self.addProfileGenerator(gen)
+        self.add_profile_generator(gen)
 
         # Set the proper equation for the fit, depending on the number of
         # phases we have.
         gnames = self._generators.keys()
         eqstr = " + ".join(gnames)
         eqstr = "scale * (%s)" % eqstr
-        self.setEquation(eqstr)
+        self.set_equation(eqstr)
 
         # Update with our metadata
         gen.meta.update(self._meta)
-        gen.processMetaData()
+        gen._process_metadata()
 
         # Constrain the shared parameters
-        self.constrain(gen.qdamp, self.qdamp)
-        self.constrain(gen.qbroad, self.qbroad)
+        self.add_constraint(gen.qdamp, self.qdamp)
+        self.add_constraint(gen.qbroad, self.qbroad)
         return
 
     # Calculation setup methods
 
-    def _getMetaValue(self, kwd):
+    def _get_meta_value(self, kwd):
         """Get metadata according to object hierarchy."""
         # Check self, then generators then profile
         if kwd in self._meta:
@@ -305,10 +289,10 @@ class PDFContribution(FitContribution):
         val = self.profile.meta.get(kwd)
         return val
 
-    def setScatteringType(self, type="X"):
+    def set_scattering_type(self, type="X"):
         """Set the scattering type.
 
-        Attributes
+        Parameters
         ----------
         type
             "X" for x-ray or "N" for neutron
@@ -317,37 +301,37 @@ class PDFContribution(FitContribution):
         """
         self._meta["stype"] = type
         for gen in self._generators.values():
-            gen.setScatteringType(type)
+            gen.set_scattering_type(type)
         return
 
-    def getScatteringType(self):
+    def get_scattering_type(self):
         """Get the scattering type.
 
-        See 'setScatteringType'.
+        See 'set_scattering_type'.
         """
-        return self._getMetaValue("stype")
+        return self._get_meta_value("stype")
 
-    def setQmax(self, qmax):
+    def set_qmax(self, qmax):
         """Set the qmax value."""
         self._meta["qmax"] = qmax
         for gen in self._generators.values():
-            gen.setQmax(qmax)
+            gen.set_qmax(qmax)
         return
 
-    def getQmax(self):
+    def get_qmax(self):
         """Get the qmax value."""
-        return self._getMetaValue("qmax")
+        return self._get_meta_value("qmax")
 
-    def setQmin(self, qmin):
+    def set_qmin(self, qmin):
         """Set the qmin value."""
         self._meta["qmin"] = qmin
         for gen in self._generators.values():
-            gen.setQmin(qmin)
+            gen.set_qmin(qmin)
         return
 
-    def getQmin(self):
+    def get_qmin(self):
         """Get the qmin value."""
-        return self._getMetaValue("qmin")
+        return self._get_meta_value("qmin")
 
 
 # End of file

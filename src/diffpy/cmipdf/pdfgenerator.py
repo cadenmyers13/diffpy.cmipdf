@@ -25,7 +25,9 @@ for its use.
 
 __all__ = ["PDFGenerator"]
 
+
 from diffpy.cmipdf.basepdfgenerator import BasePDFGenerator
+from diffpy.srreal.pdfcalculator import PDFCalculator
 
 
 class PDFGenerator(BasePDFGenerator):
@@ -65,13 +67,13 @@ class PDFGenerator(BasePDFGenerator):
     ---------------
     stype
         The scattering type "X" for x-ray, "N" for neutron (see
-        'setScatteringType').
+        'set_scattering_type').
     qmax
         The maximum scattering vector used to generate the PDF (see
-        setQmax).
+        set_qmax).
     qmin
         The minimum scattering vector used to generate the PDF (see
-        setQmin).
+        set_qmin).
     scale
         See Managed Parameters.
     delta1
@@ -86,10 +88,8 @@ class PDFGenerator(BasePDFGenerator):
 
     def __init__(self, name="pdf"):
         """Initialize the generator."""
-        from diffpy.srreal.pdfcalculator import PDFCalculator
-
         BasePDFGenerator.__init__(self, name)
-        self._setCalculator(PDFCalculator())
+        self._set_calculator(PDFCalculator())
         return
 
 
