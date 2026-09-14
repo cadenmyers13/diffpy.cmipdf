@@ -72,3 +72,12 @@ def datafile():
         return importlib.resources.files("tests.testdata").joinpath(filename)
 
     return _datafile
+
+
+@pytest.fixture(scope="session")
+def as_list():
+    def _as_list(values):
+        """Unavailable uncertainties are None rather than an array."""
+        return None if values is None else values.tolist()
+
+    return _as_list
