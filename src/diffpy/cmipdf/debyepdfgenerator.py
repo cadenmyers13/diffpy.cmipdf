@@ -25,7 +25,6 @@ __all__ = ["DebyePDFGenerator"]
 
 
 from diffpy.cmipdf.basepdfgenerator import BasePDFGenerator
-from diffpy.srreal.pdfcalculator import DebyePDFCalculator
 
 
 class DebyePDFGenerator(BasePDFGenerator):
@@ -138,6 +137,8 @@ class DebyePDFGenerator(BasePDFGenerator):
 
     def __init__(self, name="pdf"):
         """Initialize the generator."""
+        from diffpy.srreal.pdfcalculator import DebyePDFCalculator
+
         BasePDFGenerator.__init__(self, name)
         self._set_calculator(DebyePDFCalculator())
         return
