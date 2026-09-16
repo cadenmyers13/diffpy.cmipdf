@@ -93,7 +93,7 @@ class DebyePDFGenerator(BasePDFGenerator):
         This creates a DiffpyStructureParSet, ObjCrystCrystalParSet or
         ObjCrystMoleculeParSet that adapts structure to a ParameterSet
         interface.
-        See those classes (located in diffpy.srfit.structure) for how they are
+        See those classes (located in diffpy.cmipdf.structure) for how they are
         used. The resulting ParameterSet will be managed by this generator.
 
         Parameters

@@ -38,6 +38,19 @@ def has_diffpy_structure():
         return False
 
 
+# pyobjcryst
+@lru_cache()
+def has_pyobjcryst():
+    try:
+        import pyobjcryst as m
+
+        del m
+        return True
+    except ImportError:
+        logger.warning("Cannot import pyobjcryst, pyobjcryst tests skipped.")
+        return False
+
+
 # diffpy.srreal
 
 
@@ -61,6 +74,11 @@ def diffpy_structure_available():
 @pytest.fixture(scope="session")
 def diffpy_srreal_available():
     return has_diffpy_srreal()
+
+
+@pytest.fixture(scope="session")
+def pyobjcryst_available():
+    return has_pyobjcryst()
 
 
 @pytest.fixture(scope="session")
