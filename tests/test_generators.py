@@ -27,12 +27,12 @@ def testGenerator(datafile):
     for par in gen.iterate_over_parameters(recurse=False):
         pname = par.name
         defval = calc._getDoubleAttr(pname)
-        assert defval == par.getValue()
+        assert defval == par.get_value()
         # Test setting values
         par.set_value(1.0)
-        assert 1.0 == par.getValue()
+        assert 1.0 == par.get_value()
         par.set_value(defval)
-        assert defval == par.getValue()
+        assert defval == par.get_value()
 
     r = np.arange(0, 10, 0.1)
     y = gen(r)
@@ -46,7 +46,7 @@ def testGenerator(datafile):
     calc.rmin = r[0]
     calc.rmax = r[-1] + 0.5 * calc.rstep
     calc.qmax = qmax
-    calc.setScatteringFactorTableByType("N")
+    calc.scatteringfactortable = "N"
     calc.eval(structure)
     yref = calc.pdf
 

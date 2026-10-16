@@ -7,7 +7,7 @@ import pytest
 
 from diffpy.cmipdf import PDFContribution
 from diffpy.srfit.exceptions import SrFitError
-from diffpy.structure import Structure, loadStructure
+from diffpy.structure import Structure, load_structure
 
 
 def test_set_qmax():
@@ -66,7 +66,7 @@ def test_pickling(datafile):
     pc.load_data(datafile("ni-q27r100-neutron.gr"))
     ciffile = datafile("ni.cif")
     cif_path = str(ciffile)
-    ni = loadStructure(cif_path)
+    ni = load_structure(cif_path)
     ni.Uisoequiv = 0.003
     pc.add_structure(ni, name="ni")
     pc.set_calculation_range(0, 10)
