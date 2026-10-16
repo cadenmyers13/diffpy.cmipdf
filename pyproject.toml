@@ -49,10 +49,16 @@ exclude = []  # exclude packages matching these glob patterns (empty by default)
 namespaces = false  # to disable scanning PEP 420 namespaces (true by default)
 
 [project.scripts]
-diffpy-cmipdf = "diffpy.cmipdf.app:main"
+diffpy-cmipdf = "diffpy.cmipdf.cmipdf_app:main"
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements/pip.txt"]}
+
+[tool.pytest.ini_options]
+# Fail when cmipdf source calls one of its own deprecated names.
+filterwarnings = [
+    "error:'diffpy\\.cmipdf\\.:DeprecationWarning:diffpy\\.cmipdf",
+]
 
 [tool.codespell]
 exclude-file = ".codespell/ignore_lines.txt"

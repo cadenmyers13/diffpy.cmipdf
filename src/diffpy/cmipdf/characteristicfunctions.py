@@ -225,18 +225,20 @@ def lognormal_spherical_distribution(radial_dist, p_diameter, p_sigma):
     (not of the particle size), and s is the width of the distribution.
     This is
     the characteristic function for the lognormal distribution of particle
-    diameter:
+    diameter::
 
-    F(r, mu, s) = 0.5*Erfc((-mu-3*s^2+Log(r))/(sqrt(2)*s))
-               + 0.25*r^3*Erfc((-mu+Log(r))/(sqrt(2)*s))*exp(-3*mu-4.5*s^2)
-               - 0.75*r*Erfc((-mu-2*s^2+Log(r))/(sqrt(2)*s))*exp(-mu-2.5*s^2)
+        F(r, mu, s) = (
+            0.5*Erfc((-mu-3*s^2+Log(r))/(sqrt(2)*s))
+            + 0.25*r^3*Erfc((-mu+Log(r))/(sqrt(2)*s))*exp(-3*mu-4.5*s^2)
+            - 0.75*r*Erfc((-mu-2*s^2+Log(r))/(sqrt(2)*s))*exp(-mu-2.5*s^2)
+        )
 
     The expectation value of the distribution gives the average particle
     diameter, p_diameter. The variance of the distribution gives p_sigma^2.
-    mu and s can be expressed in terms of these as:
+    mu and s can be expressed in terms of these as::
 
-    s^2 = log((p_sigma/p_diameter)^2 + 1)
-    mu = log(p_diameter) - s^2/2
+        s^2 = log((p_sigma/p_diameter)^2 + 1)
+        mu = log(p_diameter) - s^2/2
 
     Source unknown
     """
@@ -402,14 +404,14 @@ class SASCF(Calculator):
         # Wrap normal parameters
         for parname in model.params:
             par = SASParameter(parname, model)
-            self.addParameter(par)
+            self.add_parameter(par)
 
         # Wrap dispersion parameters
         for parname in model.dispersion:
             name = parname + "_width"
             parname += ".width"
             par = SASParameter(name, model, parname)
-            self.addParameter(par)
+            self.add_parameter(par)
 
         return
 

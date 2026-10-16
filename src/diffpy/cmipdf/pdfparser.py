@@ -52,6 +52,7 @@ class PDFParser(ProfileParser):
     _banks
         The data from each bank. Each bank contains a
         (x, y, dx, dy) tuple:
+
         x
             A numpy array containing the independent
             variable read from the file.
