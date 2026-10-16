@@ -1,6 +1,8 @@
+"""Tests for the pdfcontribution module."""
+
 import io
 import pickle
-from itertools import chain
+import re
 
 import numpy as np
 import pytest
@@ -11,73 +13,116 @@ from diffpy.structure import Structure, load_structure
 
 
 def test_set_qmax():
-    """Check PDFContribution.setQmax()"""
-    pc = PDFContribution("pdf")
-    pc.set_qmax(21)
-    pc.add_structure(Structure(), name="empty")
-    assert 21 == pc.empty.get_qmax()
-    pc.set_qmax(22)
-    assert 22 == pc.get_qmax()
-    assert 22 == pc.empty.get_qmax()
-    return
+    contribution = PDFContribution("pdf")
+    # C1: qmax is set to 21 before a structure is added.
+    # Expected: The generator created for the structure gets qmax = 21.
+    contribution.set_qmax(21)
+    contribution.add_structure(Structure(), name="empty")
+    actual_generator_qmax = contribution.empty.get_qmax()
+    expected_generator_qmax = 21
+    assert actual_generator_qmax == expected_generator_qmax
+    # C2: qmax is set to 22 after the structure is added.
+    # Expected: Both the contribution and its generator have qmax = 22.
+    contribution.set_qmax(22)
+    actual_qmaxes = (contribution.get_qmax(), contribution.empty.get_qmax())
+    expected_qmaxes = (22, 22)
+    assert actual_qmaxes == expected_qmaxes
 
 
-def test_get_qmax():
-    """Check PDFContribution.get_qmax()"""
-    # cover all code branches in PDFContribution._get_meta_value
-    # (1) contribution metadata
-    pc1 = PDFContribution("pdf")
-    assert pc1.get_qmax() is None
-    pc1.set_qmax(17)
-    assert 17 == pc1.get_qmax()
-    # (2) contribution metadata
-    pc2 = PDFContribution("pdf")
-    pc2.add_structure(Structure(), name="empty")
-    pc2.empty.set_qmax(18)
-    assert 18 == pc2.get_qmax()
-    # (3) profile metadata
-    pc3 = PDFContribution("pdf")
-    pc3.profile.meta["qmax"] = 19
-    assert 19 == pc3.get_qmax()
-    return
+# get_qmax looks for qmax in the contribution, then in its generators, then
+# in its profile.
+def test_get_qmax_not_set():
+    # C1: qmax is not set anywhere.
+    # Expected: Returns None.
+    contribution = PDFContribution("pdf")
+    actual_qmax = contribution.get_qmax()
+    expected_qmax = None
+    assert actual_qmax == expected_qmax
+
+
+def test_get_qmax_from_contribution():
+    # C1: qmax is set to 17 on the contribution.
+    # Expected: Returns 17.
+    contribution = PDFContribution("pdf")
+    contribution.set_qmax(17)
+    actual_qmax = contribution.get_qmax()
+    expected_qmax = 17
+    assert actual_qmax == expected_qmax
+
+
+def test_get_qmax_from_generator():
+    # C1: qmax is set to 18 on the contribution's generator only.
+    # Expected: Returns 18.
+    contribution = PDFContribution("pdf")
+    contribution.add_structure(Structure(), name="empty")
+    contribution.empty.set_qmax(18)
+    actual_qmax = contribution.get_qmax()
+    expected_qmax = 18
+    assert actual_qmax == expected_qmax
+
+
+def test_get_qmax_from_profile():
+    # C1: qmax is set to 19 in the profile metadata only.
+    # Expected: Returns 19.
+    contribution = PDFContribution("pdf")
+    contribution.profile.meta["qmax"] = 19
+    actual_qmax = contribution.get_qmax()
+    expected_qmax = 19
+    assert actual_qmax == expected_qmax
 
 
 def test_savetxt(datafile):
-    "check PDFContribution.savetxt()"
+    # C1: A contribution with data on r = 0 to 10 is evaluated and saved.
+    # Expected: The file has a header line and one line for each of the
+    # 1000 points.
+    contribution = PDFContribution("pdf")
+    contribution.load_data(datafile("si-q27r60-xray.gr"))
+    contribution.set_calculation_range(0, 10)
+    contribution.add_structure(Structure(), name="empty")
+    contribution.evaluate()
+    file_object = io.BytesIO()
+    contribution.savetxt(file_object)
+    actual_text = file_object.getvalue().decode()
+    actual_line_count = len(actual_text.strip().split("\n"))
+    expected_line_count = 1001
+    assert actual_line_count == expected_line_count
 
-    pc = PDFContribution("pdf")
-    pc.load_data(datafile("si-q27r60-xray.gr"))
-    pc.set_calculation_range(0, 10)
-    pc.add_structure(Structure(), name="empty")
-    fp = io.BytesIO()
-    with pytest.raises(SrFitError):
-        pc.savetxt(fp)
-    pc.evaluate()
-    pc.savetxt(fp)
-    txt = fp.getvalue().decode()
-    nlines = len(txt.strip().split("\n"))
-    assert 1001 == nlines
-    return
+
+def test_savetxt_bad(datafile):
+    # C1: A contribution is saved before it is evaluated.
+    # Expected: Raises an SrFitError, since there is no calculated profile.
+    contribution = PDFContribution("pdf")
+    contribution.load_data(datafile("si-q27r60-xray.gr"))
+    contribution.set_calculation_range(0, 10)
+    contribution.add_structure(Structure(), name="empty")
+    expected_msg = "ycalc is None"
+    with pytest.raises(SrFitError, match=re.escape(expected_msg)):
+        contribution.savetxt(io.BytesIO())
+
+
+def _make_ni_contribution(datafile, uiso):
+    contribution = PDFContribution("pdf")
+    contribution.load_data(datafile("ni-q27r100-neutron.gr"))
+    ni = load_structure(str(datafile("ni.cif")))
+    ni.Uisoequiv = uiso
+    contribution.add_structure(ni, name="ni")
+    contribution.set_calculation_range(0, 10)
+    return contribution
 
 
 def test_pickling(datafile):
-    "validate PDFContribution.residual() after pickling."
-    pc = PDFContribution("pdf")
-    pc.load_data(datafile("ni-q27r100-neutron.gr"))
-    ciffile = datafile("ni.cif")
-    cif_path = str(ciffile)
-    ni = load_structure(cif_path)
-    ni.Uisoequiv = 0.003
-    pc.add_structure(ni, name="ni")
-    pc.set_calculation_range(0, 10)
-    pc2 = pickle.loads(pickle.dumps(pc))
-    res0 = pc.residual()
-    assert np.array_equal(res0, pc2.residual())
-    for p in chain(
-        pc.iterate_over_parameters("Uiso"), pc2.iterate_over_parameters("Uiso")
-    ):
-        p.value = 0.004
-    res1 = pc.residual()
-    assert not np.allclose(res0, res1)
-    assert np.array_equal(res1, pc2.residual())
-    return
+    contribution = _make_ni_contribution(datafile, uiso=0.003)
+    unpickled_contribution = pickle.loads(pickle.dumps(contribution))
+    # C1: A Ni contribution is pickled and unpickled.
+    # Expected: The copy has the same residual as the original.
+    actual_residual = unpickled_contribution.residual()
+    expected_residual = contribution.residual()
+    assert np.array_equal(actual_residual, expected_residual)
+    # C2: Uiso of every atom in the copy is changed from 0.003 to 0.004.
+    # Expected: The copy's residual equals that of a contribution built
+    # with Uiso = 0.004.
+    for parameter in unpickled_contribution.iterate_over_parameters("Uiso"):
+        parameter.value = 0.004
+    actual_residual = unpickled_contribution.residual()
+    expected_residual = _make_ni_contribution(datafile, uiso=0.004).residual()
+    assert np.allclose(actual_residual, expected_residual)

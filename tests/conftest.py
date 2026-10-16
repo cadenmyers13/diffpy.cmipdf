@@ -1,12 +1,10 @@
 import importlib.resources
 import json
-import logging
-from functools import lru_cache
 from pathlib import Path
 
 import pytest
 
-logger = logging.getLogger(__name__)
+from diffpy.structure import PDFFitStructure
 
 
 @pytest.fixture
@@ -21,46 +19,6 @@ def user_filesystem(tmp_path):
     with open(home_dir / "diffpyconfig.json", "w") as f:
         json.dump(home_config_data, f)
     yield tmp_path
-
-
-# diffpy.structure
-@lru_cache()
-def has_diffpy_structure():
-    try:
-        import diffpy.structure as m
-
-        del m
-        return True
-    except ImportError:
-        logger.warning(
-            "Cannot import diffpy.structure, Structure tests skipped."
-        )
-        return False
-
-
-# diffpy.srreal
-
-
-@lru_cache()
-def has_diffpy_srreal():
-    try:
-        import diffpy.srreal.pdfcalculator as m
-
-        del m
-        return True
-    except ImportError:
-        logger.warning("Cannot import diffpy.srreal, PDF tests skipped.")
-        return False
-
-
-@pytest.fixture(scope="session")
-def diffpy_structure_available():
-    return has_diffpy_structure()
-
-
-@pytest.fixture(scope="session")
-def diffpy_srreal_available():
-    return has_diffpy_srreal()
 
 
 @pytest.fixture(scope="session")
@@ -81,3 +39,14 @@ def as_list():
         return None if values is None else values.tolist()
 
     return _as_list
+
+
+@pytest.fixture
+def ni_pdffit_structure(datafile):
+    """Fixture for the Ni structure from ni.cif with Biso = 1 on every
+    atom."""
+    structure = PDFFitStructure()
+    structure.read(str(datafile("ni.cif")))
+    for atom in structure:
+        atom.Bisoequiv = 1
+    return structure
