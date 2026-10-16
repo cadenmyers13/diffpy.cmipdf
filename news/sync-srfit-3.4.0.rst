@@ -1,6 +1,6 @@
 **Added:**
 
-* <news item>
+* No news needed: syncing with srfit.
 
 **Changed:**
 
@@ -16,7 +16,7 @@
 
 **Fixed:**
 
-* Replace calls to diffpy.srfit names deprecated in 3.4.0 (``addParameter``, ``newParameter``) and srreal's ``setScatteringFactorTableByType`` with their current equivalents.
+* <news item>
 
 **Security:**
 
