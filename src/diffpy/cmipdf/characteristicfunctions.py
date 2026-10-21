@@ -45,7 +45,6 @@ from scipy.special import erf
 
 from diffpy.srfit.fitbase.calculator import Calculator
 
-
 # The record of non-physical input warnings already issued in this process,
 # keyed by (function name, requirement). See _warn_non_physical.
 _warned_non_physical = set()
