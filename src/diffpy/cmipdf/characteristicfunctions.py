@@ -34,6 +34,8 @@ __all__ = [
     "SASCF",
 ]
 
+import warnings
+
 import numpy
 from numpy import arctan as atan
 from numpy import arctanh as atanh
@@ -44,91 +46,133 @@ from scipy.special import erf
 from diffpy.srfit.fitbase.calculator import Calculator
 
 
-def spherical_particle(radial_dist, p_diameter):
-    """Spherical nanoparticle characteristic function.
+# The record of non-physical input warnings already issued in this process,
+# keyed by (function name, requirement). See _warn_non_physical.
+_warned_non_physical = set()
+
+
+def _warn_non_physical(function_name, requirement):
+    """Warn that non-physical input produced a zero characteristic
+    function.
+
+    A refinement evaluates a characteristic function on every iteration,
+    so the warning is issued only once per process for each distinct
+    requirement. The message must not include the offending value, since
+    the `warnings` registry keys on the message text and a value that
+    drifts from iteration to iteration would defeat the suppression.
+    """
+    key = (function_name, requirement)
+    if key in _warned_non_physical:
+        return
+    _warned_non_physical.add(key)
+    warnings.warn(
+        f"In '{function_name}', {requirement}. The characteristic function "
+        "was set to zero for every r, which flattens the fit residual so a "
+        "refinement cannot recover on its own. Please use a physically "
+        "meaningful starting value, or keep the parameter in range with "
+        "FitRecipe.add_soft_bounds.",
+        RuntimeWarning,
+        stacklevel=3,
+    )
+
+
+def spherical_particle(r, particle_diameter):
+    """Compute the spherical nanoparticle characteristic function.
+
+    From Kodama et al., Acta Cryst. A, 62, 444-453 (converted from
+    radius to diameter).
 
     Parameters
     ----------
-    radial_dist : float or array-like
+    r : array_like
         The distance of interaction.
-    p_diameter : float
+    particle_diameter : float
         The particle diameter.
 
+    Returns
+    -------
+    numpy.ndarray
+        The characteristic function values evaluated at `r`.
 
-    From Kodama et al., Acta Cryst. A, 62, 444-453
-    (converted from radius to diameter)
+    Warns
+    -----
+    RuntimeWarning
+        If `particle_diameter` is not positive, in which case the
+        characteristic function is zero everywhere. The warning is issued
+        only once per process.
     """
-    f = numpy.zeros(numpy.shape(radial_dist), dtype=float)
-    if p_diameter > 0:
-        x = numpy.array(radial_dist, dtype=float) / p_diameter
-        inside = x < 1.0
-        xin = x[inside]
-        f[inside] = 1.0 - 1.5 * xin + 0.5 * xin * xin * xin
-    return f
+    characteristic_function = numpy.zeros(numpy.shape(r), dtype=float)
+    if particle_diameter <= 0:
+        _warn_non_physical(
+            "spherical_particle", "'particle_diameter' must be positive"
+        )
+        return characteristic_function
+    scaled_r = numpy.array(r, dtype=float) / particle_diameter
+    inside = scaled_r < 1.0
+    scaled_r_inside = scaled_r[inside]
+    characteristic_function[inside] = (
+        1.0 - 1.5 * scaled_r_inside + 0.5 * scaled_r_inside**3
+    )
+    return characteristic_function
 
 
-def spheroidal_particle(radial_dist, r_equatorial, r_polar):
-    """Spheroidal characteristic function specified using radii.
+def spheroidal_particle(r, equatorial_radius, polar_radius):
+    """Compute the spheroidal nanoparticle characteristic function.
 
-    Spheroid with radii (r_equatorial, r_equatorial, r_polar)
+    Spheroid with radii (equatorial_radius, equatorial_radius,
+    polar_radius). ``equatorial_radius < polar_radius`` equates to a
+    prolate spheroid, ``equatorial_radius > polar_radius`` equates to
+    an oblate spheroid, and ``equatorial_radius == polar_radius`` is a
+    sphere. From Lei et al., Phys. Rev. B, 80, 024118 (2009).
 
     Parameters
     ----------
-    radial_dist : float or array-like
+    r : array_like
         The distance of interaction.
-    r_polar : float
-        The polar radius of the spheroid.
-    r_equatorial
-        The equatorial radius of the spheroid.
+    equatorial_radius : float
+        The equatorial radius.
+    polar_radius : float
+        The polar radius.
 
+    Returns
+    -------
+    numpy.ndarray
+        The characteristic function values evaluated at `r`.
 
-    Note
-    ----
-    - `r_equatorial < r_polar` equates to a prolate spheroid
-    - `r_equatorial > r_polar` equates to a oblate spheroid
-    - `r_equatorial == r_polar` is a sphere
+    Warns
+    -----
+    RuntimeWarning
+        If `equatorial_radius` or `polar_radius` is not positive, in which
+        case the characteristic function is zero everywhere. The warning is
+        issued only once per process.
     """
-    d_equatorial = 2.0 * r_equatorial
-    pelpt = 1.0 * r_polar / r_equatorial
-    return _calculate_spheroidal_cf(radial_dist, d_equatorial, pelpt)
+    if equatorial_radius <= 0:
+        _warn_non_physical(
+            "spheroidal_particle", "'equatorial_radius' must be positive"
+        )
+        return numpy.zeros(numpy.shape(r), dtype=float)
+    if polar_radius <= 0:
+        _warn_non_physical(
+            "spheroidal_particle", "'polar_radius' must be positive"
+        )
+        return numpy.zeros(numpy.shape(r), dtype=float)
 
-
-def _calculate_spheroidal_cf(r, d_equatorial, axis_ratio):
-    """Calculate the spheroidal nanoparticle characteristic function.
-
-    Form factor for ellipsoid with radii
-    (d_equatorial/2, d_equatorial/2, axis_ratio*d_equatorial/2)
-
-    Parameters
-    ----------
-    r : float or array-like
-        The distance of interaction
-    d_equatorial : float
-        The equatorial diameter
-    axis_ratio : float
-        The ratio of axis lengths
-
-
-    From Lei et al., Phys. Rev. B, 80, 024118 (2009)
-    """
-    pelpt = 1.0 * axis_ratio
-
-    if d_equatorial <= 0 or pelpt <= 0:
-        return numpy.zeros_like(r)
+    particle_diameter = 2.0 * equatorial_radius
+    axis_ratio = 1.0 * polar_radius / equatorial_radius
 
     # to simplify the equations
-    v = pelpt
-    d = 1.0 * d_equatorial
+    v = axis_ratio
+    d = particle_diameter
     d2 = d * d
     v2 = v * v
 
     if v == 1:
-        return spherical_particle(r, d_equatorial)
+        return spherical_particle(r, particle_diameter)
 
     rx = r
     if v < 1:
 
-        r = rx[rx <= v * d_equatorial]
+        r = rx[rx <= v * d]
         r2 = r * r
         f1 = (
             1
@@ -142,7 +186,7 @@ def _calculate_spheroidal_cf(r, d_equatorial, axis_ratio):
             * atanh(sqrt(1 - v2))
         )
 
-        r = rx[numpy.logical_and(rx > v * d_equatorial, rx <= d_equatorial)]
+        r = rx[numpy.logical_and(rx > v * d, rx <= d)]
         r2 = r * r
         f2 = (
             (
@@ -157,14 +201,14 @@ def _calculate_spheroidal_cf(r, d_equatorial, axis_ratio):
             / sqrt(1 - v2)
         )
 
-        r = rx[rx > d_equatorial]
+        r = rx[rx > d]
         f3 = numpy.zeros_like(r)
 
         f = numpy.concatenate((f1, f2, f3))
 
     elif v > 1:
 
-        r = rx[rx <= d_equatorial]
+        r = rx[rx <= d]
         r2 = r * r
         f1 = (
             1
@@ -178,7 +222,7 @@ def _calculate_spheroidal_cf(r, d_equatorial, axis_ratio):
             * atan(sqrt(v2 - 1))
         )
 
-        r = rx[numpy.logical_and(rx > d_equatorial, rx <= v * d_equatorial)]
+        r = rx[numpy.logical_and(rx > d, rx <= v * d)]
         r2 = r * r
         f2 = (
             1
@@ -198,7 +242,7 @@ def _calculate_spheroidal_cf(r, d_equatorial, axis_ratio):
             * (atan(sqrt(v2 - 1)) - atan(sqrt(r2 / d2 - 1)))
         )
 
-        r = rx[rx > v * d_equatorial]
+        r = rx[rx > v * d]
         f3 = numpy.zeros_like(r)
 
         f = numpy.concatenate((f1, f2, f3))
@@ -206,26 +250,16 @@ def _calculate_spheroidal_cf(r, d_equatorial, axis_ratio):
     return f
 
 
-def lognormal_spherical_distribution(radial_dist, p_diameter, p_sigma):
-    """Spherical nanoparticle characteristic function with lognormal
-    size distribution.
+def lognormal_spherical_distribution(
+    r, particle_diameter, particle_diameter_sigma
+):
+    """Compute the spherical nanoparticle characteristic function with
+    lognormal size distribution.
 
-    Parameters
-    ----------
-    radial_dist : float or array-like
-        The distance of interaction.
-    p_diameter : float
-        The mean particle diameter.
-    p_sigma : float
-        The log-normal width of the particle diameter.
-
-
-    Here, radial_dist is the independent variable, mu is the mean of the
-    distribution
-    (not of the particle size), and s is the width of the distribution.
-    This is
-    the characteristic function for the lognormal distribution of particle
-    diameter::
+    Here, r is the independent variable, mu is the mean of the
+    distribution (not of the particle size), and s is the width of
+    the distribution. This is the characteristic function for the
+    lognormal distribution of particle diameter::
 
         F(r, mu, s) = (
             0.5*Erfc((-mu-3*s^2+Log(r))/(sqrt(2)*s))
@@ -234,109 +268,174 @@ def lognormal_spherical_distribution(radial_dist, p_diameter, p_sigma):
         )
 
     The expectation value of the distribution gives the average particle
-    diameter, p_diameter. The variance of the distribution gives p_sigma^2.
-    mu and s can be expressed in terms of these as::
+    diameter, particle_diameter. The variance of the distribution gives
+    particle_diameter_sigma^2. mu and s can be expressed in terms of these
+    as::
 
-        s^2 = log((p_sigma/p_diameter)^2 + 1)
-        mu = log(p_diameter) - s^2/2
+        s^2 = log((particle_diameter_sigma/particle_diameter)^2 + 1)
+        mu = log(particle_diameter) - s^2/2
 
-    Source unknown
+    Source unknown.
+
+    Parameters
+    ----------
+    r : array_like
+        The distance of interaction.
+    particle_diameter : float
+        The mean particle diameter.
+    particle_diameter_sigma : float
+        The log-normal width of the particle diameter.
+
+    Returns
+    -------
+    numpy.ndarray
+        The characteristic function values evaluated at `r`.
+
+    Warns
+    -----
+    RuntimeWarning
+        If `particle_diameter` is not positive, if `particle_diameter_sigma`
+        is negative, or if `particle_diameter` is too small for
+        `particle_diameter_sigma` for the closed form to hold, in which case
+        the characteristic function is zero everywhere. The warning is issued
+        only once per process. A `particle_diameter_sigma` of zero is the
+        sphere limit rather than an error and does not warn.
     """
-    if p_diameter <= 0:
-        return numpy.zeros_like(radial_dist)
-    if p_sigma <= 0:
-        return spherical_particle(radial_dist, p_diameter)
+    if particle_diameter <= 0:
+        _warn_non_physical(
+            "lognormal_spherical_distribution",
+            "'particle_diameter' must be positive",
+        )
+        return numpy.zeros(numpy.shape(r), dtype=float)
+    if particle_diameter_sigma < 0:
+        _warn_non_physical(
+            "lognormal_spherical_distribution",
+            "'particle_diameter_sigma' must not be negative",
+        )
+        return numpy.zeros(numpy.shape(r), dtype=float)
+    if particle_diameter_sigma == 0:
+        return spherical_particle(r, particle_diameter)
 
     sqrt2 = sqrt(2.0)
-    s = sqrt(log(p_sigma * p_sigma / (1.0 * p_diameter * p_diameter) + 1))
-    mu = log(p_diameter) - s * s / 2
+    s = sqrt(
+        log(
+            particle_diameter_sigma
+            * particle_diameter_sigma
+            / (1.0 * particle_diameter * particle_diameter)
+            + 1
+        )
+    )
+    mu = log(particle_diameter) - s * s / 2
     if mu < 0:
-        return numpy.zeros_like(radial_dist)
+        _warn_non_physical(
+            "lognormal_spherical_distribution",
+            "'particle_diameter' is too small for 'particle_diameter_sigma'",
+        )
+        return numpy.zeros(numpy.shape(r), dtype=float)
 
     return (
-        0.5 * erfc((-mu - 3 * s * s + log(radial_dist)) / (sqrt2 * s))
+        0.5 * erfc((-mu - 3 * s * s + log(r)) / (sqrt2 * s))
         + 0.25
-        * radial_dist
-        * radial_dist
-        * radial_dist
-        * erfc((-mu + log(radial_dist)) / (sqrt2 * s))
+        * r
+        * r
+        * r
+        * erfc((-mu + log(r)) / (sqrt2 * s))
         * exp(-3 * mu - 4.5 * s * s)
         - 0.75
-        * radial_dist
-        * erfc((-mu - 2 * s * s + log(radial_dist)) / (sqrt2 * s))
+        * r
+        * erfc((-mu - 2 * s * s + log(r)) / (sqrt2 * s))
         * exp(-mu - 2.5 * s * s)
     )
 
 
-def sheet_particle(r, thickness):
-    """Nanosheet characteristic function.
+def sheet_particle(r, sheet_thickness):
+    """Compute the nanosheet characteristic function.
+
+    From Kodama et al., Acta Cryst. A, 62, 444-453.
 
     Parameters
     ----------
-    r: float or array-like
+    r : array_like
         The distance of interaction.
-    thickness : float
-        The thickness of nanosheet.
+    sheet_thickness : float
+        The thickness of the nanosheet.
 
+    Returns
+    -------
+    numpy.ndarray
+        The characteristic function values evaluated at `r`.
 
-    From Kodama et al., Acta Cryst. A, 62, 444-453
+    Warns
+    -----
+    RuntimeWarning
+        If `sheet_thickness` is not positive, in which case the
+        characteristic function is zero everywhere. The warning is issued
+        only once per process.
     """
-    # handle zero or negative thickness.  make it work for scalars and arrays.
-    if thickness <= 0:
-        return 0 * thickness
+    if sheet_thickness <= 0:
+        _warn_non_physical(
+            "sheet_particle", "'sheet_thickness' must be positive"
+        )
+        if numpy.isscalar(r):
+            return 0.0
+        return numpy.zeros(numpy.shape(r), dtype=float)
     # process scalar r
     if numpy.isscalar(r):
-        rv = 1 - 0.5 * r / thickness if r < thickness else 0.5 * thickness / r
+        rv = (
+            1 - 0.5 * r / sheet_thickness
+            if r < sheet_thickness
+            else 0.5 * sheet_thickness / r
+        )
         return rv
     # handle array-type r
-    ra = numpy.asarray(r)
-    lo = ra < thickness
-    hi = ~lo
-    f = numpy.empty_like(ra, dtype=float)
-    f[lo] = 1 - 0.5 * ra[lo] / thickness
-    f[hi] = 0.5 * thickness / ra[hi]
-    return f
+    r_array = numpy.asarray(r)
+    inside = r_array < sheet_thickness
+    outside = ~inside
+    characteristic_function = numpy.empty_like(r_array, dtype=float)
+    characteristic_function[inside] = (
+        1 - 0.5 * r_array[inside] / sheet_thickness
+    )
+    characteristic_function[outside] = 0.5 * sheet_thickness / r_array[outside]
+    return characteristic_function
 
 
-def spherical_shell(radial_dist, inner_radius, thickness):
-    """Spherical shell characteristic function.
+def spherical_shell(r, radius, thickness):
+    """Compute the spherical shell characteristic function.
+
+    The outer radius equals ``radius + thickness``. From Lei et al.,
+    Phys. Rev. B, 80, 024118 (2009).
 
     Parameters
     ----------
-    radial_dist : float or array-like
+    r : array_like
         The distance of interaction.
-    inner_radius : float
-        The inner radius of the shell.
+    radius : float
+        The inner radius.
     thickness : float
-        The thickness of shell.
+        The thickness of the shell.
 
+    Returns
+    -------
+    numpy.ndarray
+        The characteristic function values evaluated at `r`.
 
-    outer radius = inner_radius + thickness
-
-    From Lei et al., Phys. Rev. B, 80, 024118 (2009)
+    Warns
+    -----
+    RuntimeWarning
+        If `thickness` is not positive or `radius` is negative, in which case
+        the characteristic function is zero everywhere. The warning is issued
+        only once per process. A `radius` of zero is the solid sphere limit
+        rather than an error and does not warn.
     """
+    if thickness <= 0:
+        _warn_non_physical("spherical_shell", "'thickness' must be positive")
+        return numpy.zeros(numpy.shape(r), dtype=float)
+    if radius < 0:
+        _warn_non_physical("spherical_shell", "'radius' must not be negative")
+        return numpy.zeros(numpy.shape(r), dtype=float)
+
     d = 1.0 * thickness
-    a = 1.0 * inner_radius + d / 2.0
-    return _calculate_shell_cf(radial_dist, a, d)
-
-
-def _calculate_shell_cf(r, a, delta):
-    """Spherical shell characteristic function.
-
-    Parameters
-    ----------
-    a
-        Central radius
-    delta
-        Thickness of shell
-
-    outer radius = a + thickness/2
-
-
-    From Lei et al., Phys. Rev. B, 80, 024118 (2009)
-    """
-    a = 1.0 * a
-    d = 1.0 * delta
+    a = 1.0 * radius + d / 2.0
     a2 = a**2
     d2 = d**2
     dmr = d - r
@@ -390,10 +489,10 @@ class SASCF(Calculator):
 
         Parameters
         ----------
-        name
-            A name for the SASCF
-        model
-            SASModel object this adapts.
+        name : str
+            The name for the SASCF.
+        model : BaseModel
+            The sas.models.BaseModel object this adapts.
         """
         Calculator.__init__(self, name)
 
@@ -418,7 +517,6 @@ class SASCF(Calculator):
     def __call__(self, r):
         """Calculate the characteristic function from the transform of
         the BaseModel."""
-
         # Determine q-values.
         # We want very fine r-spacing so we can properly normalize f(r). This
         # equates to having a large qmax so that the Fourier transform is
@@ -428,8 +526,8 @@ class SASCF(Calculator):
         #
         # The initial dr is somewhat arbitrary, but using dr = 0.01 allows for
         # the f(r) calculated from a particle of diameter 50, over r =
-        # arange(1, 60, 0.1) to agree with the spherical_particle with
-        # Rw < 1e-4%.
+        # arange(1, 60, 0.1) to agree with the spherical_particle with Rw <
+        # 1e-4%.
         #
         # We also have to make a q-spacing small enough to compute out to at
         # least the size of the signal.
@@ -485,6 +583,18 @@ class SASCF(Calculator):
 
 
 def erfc(x):
+    """Compute the complementary error function.
+
+    Parameters
+    ----------
+    x : array_like
+        The input value.
+
+    Returns
+    -------
+    numpy.ndarray
+        The complementary error function evaluated at `x`.
+    """
     return 1.0 - erf(x)
 
 
