@@ -1,10 +1,45 @@
 import importlib.resources
 import json
+from functools import lru_cache
 from pathlib import Path
 
 import pytest
 
 from diffpy.structure import PDFFitStructure
+
+
+@lru_cache()
+def has_sas():
+    try:
+        import sas
+        import sasmodels
+
+        del sas
+        del sasmodels
+        return True
+    except ImportError:
+        return False
+
+
+@pytest.fixture(scope="session")
+def sas_available():
+    return has_sas()
+
+
+@pytest.fixture
+def reset_characteristic_function_warnings():
+    """Clear the record of already-issued non-physical input warnings.
+
+    The characteristic functions warn only once per process for each
+    distinct non-physical input so that a refinement loop does not flood
+    the user with repeated messages. Tests that assert on the warning
+    must start and finish with a clean record.
+    """
+    from diffpy.cmipdf.characteristicfunctions import _warned_non_physical
+
+    _warned_non_physical.clear()
+    yield
+    _warned_non_physical.clear()
 
 
 @pytest.fixture
