@@ -13,7 +13,7 @@
 
 **Removed:**
 
-* <news item>
+* Remove the non-functional ``SASCF`` calculator from ``characteristicfunctions``. SAS characteristic functions now live in ``diffpy.cmisas``.
 
 **Fixed:**
 
