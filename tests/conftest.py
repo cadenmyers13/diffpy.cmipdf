@@ -1,29 +1,10 @@
 import importlib.resources
 import json
-from functools import lru_cache
 from pathlib import Path
 
 import pytest
 
 from diffpy.structure import PDFFitStructure
-
-
-@lru_cache()
-def has_sas():
-    try:
-        import sas
-        import sasmodels
-
-        del sas
-        del sasmodels
-        return True
-    except ImportError:
-        return False
-
-
-@pytest.fixture(scope="session")
-def sas_available():
-    return has_sas()
 
 
 @pytest.fixture
