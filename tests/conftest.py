@@ -8,6 +8,22 @@ from diffpy.structure import PDFFitStructure
 
 
 @pytest.fixture
+def reset_characteristic_function_warnings():
+    """Clear the record of already-issued non-physical input warnings.
+
+    The characteristic functions warn only once per process for each
+    distinct non-physical input so that a refinement loop does not flood
+    the user with repeated messages. Tests that assert on the warning
+    must start and finish with a clean record.
+    """
+    from diffpy.cmipdf.characteristicfunctions import _warned_non_physical
+
+    _warned_non_physical.clear()
+    yield
+    _warned_non_physical.clear()
+
+
+@pytest.fixture
 def user_filesystem(tmp_path):
     base_dir = Path(tmp_path)
     home_dir = base_dir / "home_dir"

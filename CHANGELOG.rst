@@ -10,4 +10,3 @@ Release notes
 **Added:**
 
 * Add source code from ``diffpy.srfit.pdf`` to ``diffpy.cmipdf``.
-
