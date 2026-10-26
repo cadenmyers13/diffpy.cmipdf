@@ -6,7 +6,8 @@ import pytest
 from diffpy.cmipdf import DebyePDFGenerator, PDFGenerator
 from diffpy.cmistructure import constrain_as_space_group
 from diffpy.cmistructure.diffpyparset import DiffpyStructureParSet
-from diffpy.srreal.pdfcalculator import PDFCalculator
+from diffpy.srreal.pdfcalculator import DebyePDFCalculator, PDFCalculator
+from diffpy.srreal.structureadapter import nosymmetry
 
 
 # set_scattering_type stores the radiation type used for the calculation.
@@ -183,5 +184,65 @@ def test_generator_matches_calculator(ni_pdffit_structure):
     calculator.qmax = qmax
     calculator.scatteringfactortable = "N"
     calculator.eval(ni_pdffit_structure)
+    expected_pdf = calculator.pdf
+    assert np.allclose(actual_pdf, expected_pdf)
+
+
+# set_structure treats the structure as periodic for PDFGenerator, which
+# models crystals, and as not periodic for DebyePDFGenerator, which models
+# isolated scatterers such as nanoparticles and molecules.
+@pytest.mark.parametrize(
+    "input_generator_class, expected_using_symmetry",
+    [
+        # C1: A structure is set on a PDFGenerator without periodic.
+        # Expected: The phase uses symmetry.
+        (PDFGenerator, True),
+        # C2: A structure is set on a DebyePDFGenerator without periodic.
+        # Expected: The phase does not use symmetry.
+        (DebyePDFGenerator, False),
+    ],
+)
+def test_set_structure_default_periodic(
+    ni_pdffit_structure, input_generator_class, expected_using_symmetry
+):
+    generator = input_generator_class()
+    generator.set_structure(ni_pdffit_structure)
+    actual_using_symmetry = generator.phase.using_symmetry()
+    assert actual_using_symmetry == expected_using_symmetry
+
+
+def test_debye_generator_parameter_names(ni_pdffit_structure):
+    # C1: A structure is set on a DebyePDFGenerator.
+    # Expected: The generator holds the same calculator Parameters as a
+    # PDFGenerator.
+    generator = DebyePDFGenerator()
+    generator.set_structure(ni_pdffit_structure)
+    actual_parameter_names = [
+        parameter.name
+        for parameter in generator.iterate_over_parameters(recurse=False)
+    ]
+    expected_parameter_names = ["delta1", "delta2", "qbroad", "scale", "qdamp"]
+    assert actual_parameter_names == expected_parameter_names
+
+
+def test_debye_generator_matches_calculator(ni_pdffit_structure):
+    # C1: The generator computes the x-ray PDF of the Ni unit cell as an
+    # isolated cluster with qmax = 27 on r = 0.1, 0.2, ..., 9.9.
+    # Expected: The PDF equals the one from a DebyePDFCalculator with the
+    # same settings.
+    qmax = 27.0
+    r = np.arange(0.1, 10, 0.1)
+    generator = DebyePDFGenerator()
+    generator.set_scattering_type("X")
+    generator.set_qmax(qmax)
+    generator.set_structure(ni_pdffit_structure)
+    actual_pdf = generator(r)
+    calculator = DebyePDFCalculator()
+    calculator.rstep = r[1] - r[0]
+    calculator.rmin = r[0]
+    calculator.rmax = r[-1] + 0.5 * calculator.rstep
+    calculator.qmax = qmax
+    calculator.scatteringfactortable = "X"
+    calculator.eval(nosymmetry(ni_pdffit_structure))
     expected_pdf = calculator.pdf
     assert np.allclose(actual_pdf, expected_pdf)
