@@ -1,10 +1,10 @@
 **Added:**
 
-* <news item>
+* No news added: The unreleased fix-cfs news item already covers the characteristic function changes and lists the srfit 3.4.0 names.
 
 **Changed:**
 
-* Rename ``lognormal_spherical_distribution`` to ``lognormal_spherical_particle`` and ``spherical_shell`` to ``shell_particle``, the names they have in ``diffpy.srfit`` 3.4.0, so scripts written for srfit 3.4.0 only need to change the import.
+* <news item>
 
 **Deprecated:**
 
