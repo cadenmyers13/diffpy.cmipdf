@@ -30,7 +30,7 @@ diffpy.cmipdf.characteristicfunctions module.
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-from crystalpdf import scipyOptimize
+from crystalpdf import scipy_optimize
 from pyobjcryst.crystal import create_crystal_from_cif
 
 from diffpy.cmipdf import PDFGenerator, PDFParser
@@ -42,7 +42,7 @@ from diffpy.srfit.fitbase import (
 )
 
 
-def makeRecipe(ciffile, grdata):
+def make_recipe(ciffile, grdata):
     """Make a recipe to model a crystal-like nanoparticle PDF."""
     # Set up a PDF fit as has been done in other examples.
     pdfprofile = Profile()
@@ -118,8 +118,8 @@ if __name__ == "__main__":
     ciffile = Path(__file__).parent / "data/pb.cif"
     grdata = Path(__file__).parent / "data/pb_100_qmin1.gr"
 
-    recipe = makeRecipe(ciffile, grdata)
-    scipyOptimize(recipe)
+    recipe = make_recipe(ciffile, grdata)
+    scipy_optimize(recipe)
 
     res = FitResults(recipe)
     res.print_results()

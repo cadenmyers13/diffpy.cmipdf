@@ -36,7 +36,7 @@ from diffpy.srfit.fitbase import (
 #  Example Code
 
 
-def makeRecipe(molecule, datname):
+def make_recipe(molecule, datname):
     """Create a recipe that uses the DebyePDFGenerator."""
     # The Profile
     profile = Profile()
@@ -119,9 +119,9 @@ plot_styles = {
 
 def main():
 
-    molecule = makeC60()
+    molecule = make_c60()
     # Make the data and the recipe
-    recipe = makeRecipe(molecule, Path(__file__).parent / "data/C60.gr")
+    recipe = make_recipe(molecule, Path(__file__).parent / "data/C60.gr")
     # Tell the fithook that we want very verbose output.
     recipe.fithooks[0].verbose = 3
 
@@ -204,7 +204,7 @@ c60xyz = """
 """
 
 
-def makeC60():
+def make_c60():
     """Make the C60 molecule using pyobjcryst."""
     from pyobjcryst.crystal import Crystal
     from pyobjcryst.molecule import Molecule

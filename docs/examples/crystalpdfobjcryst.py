@@ -25,7 +25,7 @@ provided by the ObjCrystCrystalParSet structure adapter.
 
 from pathlib import Path
 
-from crystalpdf import scipyOptimize
+from crystalpdf import scipy_optimize
 from pyobjcryst.crystal import create_crystal_from_cif
 
 from diffpy.cmipdf import PDFGenerator, PDFParser
@@ -40,7 +40,7 @@ from diffpy.srfit.fitbase import (
 #  Example Code
 
 
-def makeRecipe(ciffile, datname):
+def make_recipe(ciffile, datname):
     """Create a fitting recipe for crystalline PDF data."""
     # The Profile
     # This will be used to store the observed and calculated PDF profile.
@@ -121,10 +121,10 @@ if __name__ == "__main__":
     data = Path(__file__).parent / "data/si-q27r60-xray.gr"
 
     # Make the recipe
-    recipe = makeRecipe(ciffile, data)
+    recipe = make_recipe(ciffile, data)
 
     # Optimize
-    scipyOptimize(recipe)
+    scipy_optimize(recipe)
 
     # Generate and print the FitResults
     res = FitResults(recipe)

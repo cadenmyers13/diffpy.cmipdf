@@ -43,7 +43,7 @@ from diffpy.structure import Structure
 #  Example Code
 
 
-def makeRecipe(ciffile, datname):
+def make_recipe(ciffile, datname):
     """Create a fitting recipe for crystalline PDF data."""
     # The Profile
     # This will be used to store the observed and calculated PDF profile.
@@ -139,10 +139,10 @@ plot_styles = {
 }
 
 
-def scipyOptimize(recipe):
+def scipy_optimize(recipe):
     """Optimize the recipe created above using scipy.
 
-    The FitRecipe we created in makeRecipe has a 'residual' method that
+    The FitRecipe we created in make_recipe has a 'residual' method that
     we can be minimized using a scipy optimizer. The details are
     described in the source.
     """
@@ -165,11 +165,11 @@ if __name__ == "__main__":
     data = Path(__file__).parent / "data/ni-q27r100-neutron.gr"
 
     # Make the recipe
-    recipe = makeRecipe(ciffile, data)
+    recipe = make_recipe(ciffile, data)
     recipe.fithooks[0].verbose = 3
 
     # Optimize
-    scipyOptimize(recipe)
+    scipy_optimize(recipe)
 
     # Generate and print the FitResults
     res = FitResults(recipe)

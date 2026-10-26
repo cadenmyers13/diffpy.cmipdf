@@ -24,7 +24,7 @@ structure to all the available data.
 
 from pathlib import Path
 
-from crystalpdf import scipyOptimize
+from crystalpdf import scipy_optimize
 from pyobjcryst.crystal import create_crystal_from_cif
 
 from diffpy.cmipdf import PDFGenerator, PDFParser
@@ -39,7 +39,7 @@ from diffpy.srfit.fitbase import (
 #  Example Code
 
 
-def makeProfile(datafile):
+def make_profile(datafile):
     """Make an place data within a Profile."""
     profile = Profile()
     parser = PDFParser()
@@ -49,7 +49,7 @@ def makeProfile(datafile):
     return profile
 
 
-def makeContribution(name, generator, profile):
+def make_contribution(name, generator, profile):
     """Make a FitContribution and add a generator and profile."""
     contribution = FitContribution(name)
     contribution.add_profile_generator(generator)
@@ -57,16 +57,16 @@ def makeContribution(name, generator, profile):
     return contribution
 
 
-def makeRecipe(
+def make_recipe(
     ciffile_ni, ciffile_si, xdata_ni, ndata_ni, xdata_si, xdata_sini
 ):
     """Create a fitting recipe for crystalline PDF data."""
     # The Profiles
     # We need a profile for each data set.
-    xprofile_ni = makeProfile(xdata_ni)
-    xprofile_si = makeProfile(xdata_si)
-    nprofile_ni = makeProfile(ndata_ni)
-    xprofile_sini = makeProfile(xdata_sini)
+    xprofile_ni = make_profile(xdata_ni)
+    xprofile_si = make_profile(xdata_si)
+    nprofile_ni = make_profile(ndata_ni)
+    xprofile_sini = make_profile(xdata_sini)
 
     # The ProfileGenerators
     # We create one for each phase and share the phases.
@@ -91,10 +91,12 @@ def makeRecipe(
 
     # The FitContributions
     # We one of these for each data set.
-    xcontribution_ni = makeContribution("xnickel", xgenerator_ni, xprofile_ni)
-    xcontribution_si = makeContribution("xsilicon", xgenerator_si, xprofile_si)
-    ncontribution_ni = makeContribution("nnickel", ngenerator_ni, nprofile_ni)
-    xcontribution_sini = makeContribution(
+    xcontribution_ni = make_contribution("xnickel", xgenerator_ni, xprofile_ni)
+    xcontribution_si = make_contribution(
+        "xsilicon", xgenerator_si, xprofile_si
+    )
+    ncontribution_ni = make_contribution("nnickel", ngenerator_ni, nprofile_ni)
+    xcontribution_sini = make_contribution(
         "xsini", xgenerator_sini_ni, xprofile_sini
     )
     xcontribution_sini.add_profile_generator(xgenerator_sini_si)
@@ -164,12 +166,12 @@ if __name__ == "__main__":
     xdata_sini = Path(__file__).parent / "data/si90ni10-q27r60-xray.gr"
 
     # Make the recipe
-    recipe = makeRecipe(
+    recipe = make_recipe(
         ciffile_ni, ciffile_si, xdata_ni, ndata_ni, xdata_si, xdata_sini
     )
 
     # Optimize
-    scipyOptimize(recipe)
+    scipy_optimize(recipe)
 
     # Generate and print the FitResults
     res = FitResults(recipe)

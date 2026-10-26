@@ -26,7 +26,7 @@ nickel and silicon to find the structures and phase fractions.
 
 from pathlib import Path
 
-from crystalpdf import scipyOptimize
+from crystalpdf import scipy_optimize
 from pyobjcryst.crystal import create_crystal_from_cif
 
 from diffpy.cmipdf import PDFGenerator, PDFParser
@@ -41,7 +41,7 @@ from diffpy.srfit.fitbase import (
 #  Example Code
 
 
-def makeRecipe(niciffile, siciffile, datname):
+def make_recipe(niciffile, siciffile, datname):
     """Create a fitting recipe for crystalline PDF data."""
     # The Profile
     profile = Profile()
@@ -170,10 +170,10 @@ if __name__ == "__main__":
     data = Path(__file__).parent / "data/si90ni10-q27r60-xray.gr"
 
     # Make the recipe
-    recipe = makeRecipe(niciffile, siciffile, data)
+    recipe = make_recipe(niciffile, siciffile, data)
 
     # Optimize
-    scipyOptimize(recipe)
+    scipy_optimize(recipe)
 
     # Generate and print the FitResults
     res = FitResults(recipe)

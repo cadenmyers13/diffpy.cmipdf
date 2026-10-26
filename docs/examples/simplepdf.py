@@ -24,7 +24,7 @@ data. It uses the PDFContribution class to simplify fit setup.
 
 from pathlib import Path
 
-from crystalpdf import scipyOptimize
+from crystalpdf import scipy_optimize
 
 from diffpy.cmipdf import PDFContribution
 from diffpy.srfit.fitbase import FitRecipe, FitResults
@@ -34,7 +34,7 @@ from diffpy.structure import Structure
 #  Example Code
 
 
-def makeRecipe(ciffile, datname):
+def make_recipe(ciffile, datname):
     """Create a fitting recipe for crystalline PDF data."""
     # Work directly with a custom PDFContribution to load the data
     contribution = PDFContribution("nickel")
@@ -83,10 +83,10 @@ if __name__ == "__main__":
     data = Path(__file__).parent / "data/ni-q27r100-neutron.gr"
 
     # Make the recipe
-    recipe = makeRecipe(ciffile, data)
+    recipe = make_recipe(ciffile, data)
 
     # Optimize
-    scipyOptimize(recipe)
+    scipy_optimize(recipe)
     # Save the file
     recipe.nickel.savetxt("nickel_example.fit")
 

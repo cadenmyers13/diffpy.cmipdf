@@ -40,7 +40,7 @@ from diffpy.srfit.fitbase import (
 # Example Code
 
 
-def makeRecipe(stru1, stru2, datname):
+def make_recipe(stru1, stru2, datname):
     """Create a fitting recipe for crystalline PDF data."""
     # The Profile
     profile = Profile()
@@ -158,7 +158,7 @@ def main():
     # Make the recipe
     stru1 = create_crystal_from_cif(str(cdsciffile))
     stru2 = create_crystal_from_cif(str(znsciffile))
-    recipe = makeRecipe(stru1, stru2, data)
+    recipe = make_recipe(stru1, stru2, data)
     from diffpy.srfit.fitbase.fithook import PlotFitHook
 
     recipe.push_fit_hook(PlotFitHook())
@@ -167,7 +167,7 @@ def main():
     # Optimize - we do this in steps to help convergence
     recipe.fix("all")
 
-    # Start with the lattice parameters. In makeRecipe, these were tagged with
+    # Start with the lattice parameters. In make_recipe, these were tagged with
     # "lat". Here is how we use that.
     recipe.free("lat")
     leastsq(recipe.residual, recipe.values, maxfev=50)
