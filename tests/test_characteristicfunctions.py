@@ -131,13 +131,13 @@ def test_spheroidal_particle(
         ),
     ],
 )
-def test_lognormal_spherical_distribution(
+def test_lognormal_spherical_particle(
     input_r,
     input_particle_diameter,
     input_particle_diameter_sigma,
     expected_characteristic_function,
 ):
-    actual_characteristic_function = cf.lognormal_spherical_distribution(
+    actual_characteristic_function = cf.lognormal_spherical_particle(
         input_r, input_particle_diameter, input_particle_diameter_sigma
     )
     npt.assert_allclose(
@@ -196,10 +196,10 @@ def test_sheet_particle(
         ),
     ],
 )
-def test_spherical_shell(
+def test_shell_particle(
     input_r, input_radius, input_thickness, expected_characteristic_function
 ):
-    actual_characteristic_function = cf.spherical_shell(
+    actual_characteristic_function = cf.shell_particle(
         input_r, input_radius, input_thickness
     )
     npt.assert_allclose(
@@ -264,7 +264,7 @@ def test_spherical_shell(
         # Expected: zero everywhere, warning that the diameter must be
         # positive.
         (
-            "lognormal_spherical_distribution",
+            "lognormal_spherical_particle",
             (numpy.array([1.0, 2.0]), 0.0, 1.0),
             "'particle_diameter' must be positive",
         ),
@@ -274,7 +274,7 @@ def test_spherical_shell(
         # Expected: zero everywhere, warning that the width must not be
         # negative.
         (
-            "lognormal_spherical_distribution",
+            "lognormal_spherical_particle",
             (numpy.array([1.0, 5.0, 10.0]), 10.0, -2.0),
             "'particle_diameter_sigma' must not be negative",
         ),
@@ -284,7 +284,7 @@ def test_spherical_shell(
         # Expected: zero everywhere, warning that the diameter is too small
         # for the width.
         (
-            "lognormal_spherical_distribution",
+            "lognormal_spherical_particle",
             (numpy.array([1.0, 5.0]), 2.0, 4.0),
             "'particle_diameter' is too small for 'particle_diameter_sigma'",
         ),
@@ -310,7 +310,7 @@ def test_spherical_shell(
         # Expected: zero everywhere, warning that the thickness must be
         # positive.
         (
-            "spherical_shell",
+            "shell_particle",
             (numpy.array([1.0, 5.0, 10.0]), 10.0, 0.0),
             "'thickness' must be positive",
         ),
@@ -320,7 +320,7 @@ def test_spherical_shell(
         # Expected: zero everywhere, warning that the thickness must be
         # positive.
         (
-            "spherical_shell",
+            "shell_particle",
             (numpy.array([1.0, 5.0, 10.0]), 10.0, -5.0),
             "'thickness' must be positive",
         ),
@@ -328,7 +328,7 @@ def test_spherical_shell(
         # Expected: zero everywhere, warning that the radius must not be
         # negative.
         (
-            "spherical_shell",
+            "shell_particle",
             (numpy.array([1.0, 5.0, 10.0]), -20.0, 5.0),
             "'radius' must not be negative",
         ),
@@ -366,7 +366,7 @@ def test_non_physical_input_returns_zero_and_warns(
         # Expected: matches spherical_particle for the same diameter, with no
         # warning.
         (
-            "lognormal_spherical_distribution",
+            "lognormal_spherical_particle",
             (numpy.array([1.0, 5.0, 10.0]), 10.0, 0.0),
             cf.spherical_particle(numpy.array([1.0, 5.0, 10.0]), 10.0),
         ),
@@ -375,7 +375,7 @@ def test_non_physical_input_returns_zero_and_warns(
         # Expected: matches spherical_particle for twice the thickness, with
         # no warning.
         (
-            "spherical_shell",
+            "shell_particle",
             (numpy.array([1.0, 5.0, 10.0]), 0.0, 5.0),
             cf.spherical_particle(numpy.array([1.0, 5.0, 10.0]), 10.0),
         ),

@@ -28,9 +28,9 @@ using the 'register_function' method of that class.
 __all__ = [
     "spherical_particle",
     "spheroidal_particle",
-    "lognormal_spherical_distribution",
+    "lognormal_spherical_particle",
     "sheet_particle",
-    "spherical_shell",
+    "shell_particle",
 ]
 
 import warnings
@@ -245,7 +245,7 @@ def spheroidal_particle(r, equatorial_radius, polar_radius):
     return f
 
 
-def lognormal_spherical_distribution(
+def lognormal_spherical_particle(
     r, particle_diameter, particle_diameter_sigma
 ):
     """Compute the spherical nanoparticle characteristic function with
@@ -298,13 +298,13 @@ def lognormal_spherical_distribution(
     """
     if particle_diameter <= 0:
         _warn_non_physical(
-            "lognormal_spherical_distribution",
+            "lognormal_spherical_particle",
             "'particle_diameter' must be positive",
         )
         return numpy.zeros(numpy.shape(r), dtype=float)
     if particle_diameter_sigma < 0:
         _warn_non_physical(
-            "lognormal_spherical_distribution",
+            "lognormal_spherical_particle",
             "'particle_diameter_sigma' must not be negative",
         )
         return numpy.zeros(numpy.shape(r), dtype=float)
@@ -323,7 +323,7 @@ def lognormal_spherical_distribution(
     mu = log(particle_diameter) - s * s / 2
     if mu < 0:
         _warn_non_physical(
-            "lognormal_spherical_distribution",
+            "lognormal_spherical_particle",
             "'particle_diameter' is too small for 'particle_diameter_sigma'",
         )
         return numpy.zeros(numpy.shape(r), dtype=float)
@@ -394,7 +394,7 @@ def sheet_particle(r, sheet_thickness):
     return characteristic_function
 
 
-def spherical_shell(r, radius, thickness):
+def shell_particle(r, radius, thickness):
     """Compute the spherical shell characteristic function.
 
     The outer radius equals ``radius + thickness``. From Lei et al.,
@@ -423,10 +423,10 @@ def spherical_shell(r, radius, thickness):
         rather than an error and does not warn.
     """
     if thickness <= 0:
-        _warn_non_physical("spherical_shell", "'thickness' must be positive")
+        _warn_non_physical("shell_particle", "'thickness' must be positive")
         return numpy.zeros(numpy.shape(r), dtype=float)
     if radius < 0:
-        _warn_non_physical("spherical_shell", "'radius' must not be negative")
+        _warn_non_physical("shell_particle", "'radius' must not be negative")
         return numpy.zeros(numpy.shape(r), dtype=float)
 
     d = 1.0 * thickness
