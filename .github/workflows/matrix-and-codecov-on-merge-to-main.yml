@@ -17,5 +17,8 @@ jobs:
       project: diffpy.cmipdf
       c_extension: false
       headless: false
+      run: |
+        set -Eeuo pipefail
+        python -m pip install --no-deps diffpy.cmistructure
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
