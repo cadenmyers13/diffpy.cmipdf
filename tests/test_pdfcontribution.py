@@ -126,3 +126,26 @@ def test_pickling(datafile):
     actual_residual = unpickled_contribution.residual()
     expected_residual = _make_ni_contribution(datafile, uiso=0.004).residual()
     assert np.allclose(actual_residual, expected_residual)
+
+
+# load_data reads the PDF metadata in the data file header, so the
+# contribution takes its scattering type and qmax from the file.
+@pytest.mark.parametrize(
+    "input_filename, expected_settings",
+    [
+        # C1: The header holds PDFgetX3 "name = value" lines.
+        # Expected: The scattering type "X" and qmax 27 from the header.
+        ("si-q27r60-xray.gr", ("X", 27.0)),
+        # C2: The header holds a free-text NOMAD instrument comment.
+        # Expected: The scattering type "N" and qmax 31.414 from the comment.
+        ("nom-mno-neutron.gr", ("N", 31.414)),
+    ],
+)
+def test_load_data_reads_metadata(datafile, input_filename, expected_settings):
+    contribution = PDFContribution("pdf")
+    contribution.load_data(datafile(input_filename))
+    actual_settings = (
+        contribution.get_scattering_type(),
+        contribution.get_qmax(),
+    )
+    assert actual_settings == expected_settings
