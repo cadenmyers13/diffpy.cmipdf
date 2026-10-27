@@ -72,6 +72,29 @@ def test_get_qmax_from_profile():
     assert actual_qmax == expected_qmax
 
 
+# load_data reads the PDF metadata in the data file header, so the
+# contribution takes its scattering type and qmax from the file.
+@pytest.mark.parametrize(
+    "input_filename, expected_settings",
+    [
+        # C1: The header holds PDFgetX3 "name = value" lines.
+        # Expected: The scattering type "X" and qmax 27 from the header.
+        ("si-q27r60-xray.gr", ("X", 27.0)),
+        # C2: The header holds a free-text NOMAD instrument comment.
+        # Expected: The scattering type "N" and qmax 31.414 from the comment.
+        ("nom-mno-neutron.gr", ("N", 31.414)),
+    ],
+)
+def test_load_data_reads_metadata(datafile, input_filename, expected_settings):
+    contribution = PDFContribution("pdf")
+    contribution.load_data(datafile(input_filename))
+    actual_settings = (
+        contribution.get_scattering_type(),
+        contribution.get_qmax(),
+    )
+    assert actual_settings == expected_settings
+
+
 def test_savetxt(datafile):
     # C1: A contribution with data on r = 0 to 10 is evaluated and saved.
     # Expected: The file has a header line and one line for each of the
