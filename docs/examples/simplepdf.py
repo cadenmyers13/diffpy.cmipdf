@@ -1,0 +1,101 @@
+#!/usr/bin/env python
+########################################################################
+#
+# (c) 2010 The Trustees of Columbia University in the City of New York.
+# (c) 2026 Contributors to diffpy.cmipdf.
+# All rights reserved.
+#
+# File coded by: Chris Farrow and members of the diffpy community.
+#
+# Originally developed in diffpy.srfit by the DANSE Diffraction group and
+# Simon J. L. Billinge.
+#
+# See GitHub contributions for a more detailed list of contributors.
+# https://github.com/diffpy/diffpy.cmipdf/graphs/contributors
+#
+# See LICENSE.rst and LICENSE_DANSE.rst for license information.
+#
+########################################################################
+"""Example of a PDF using the PDFContribution helper class.
+
+This is example of fitting the fcc nickel structure to measured PDF
+data. It uses the PDFContribution class to simplify fit setup.
+"""
+
+from pathlib import Path
+
+from crystalpdf import scipy_optimize
+
+from diffpy.cmipdf import PDFContribution
+from diffpy.srfit.fitbase import FitRecipe, FitResults
+from diffpy.structure import Structure
+
+######
+#  Example Code
+
+
+def make_recipe(ciffile, datname):
+    """Create a fitting recipe for crystalline PDF data."""
+    # Work directly with a custom PDFContribution to load the data
+    contribution = PDFContribution("nickel")
+    contribution.load_data(datname)
+    contribution.set_calculation_range(xmin=1, xmax=20, dx=0.1)
+
+    # and the phase
+    stru = Structure()
+    stru.read(str(ciffile))
+    contribution.add_structure(stru, "nickel")
+
+    # Make the FitRecipe and add the FitContribution.
+    recipe = FitRecipe()
+    recipe.add_contribution(contribution)
+
+    # Configure the fit variables
+    phase = contribution.nickel.phase
+
+    from diffpy.cmistructure import constrain_as_space_group
+
+    sgpars = constrain_as_space_group(phase, "Fm-3m")
+
+    for par in sgpars.latpars:
+        recipe.add_variable(par)
+    for par in sgpars.adppars:
+        recipe.add_variable(par, 0.005)
+
+    recipe.add_variable(contribution.scale, 1)
+    recipe.add_variable(contribution.qdamp, 0.03, fixed=True)
+    recipe.add_variable(contribution.nickel.delta2, 5)
+
+    # Give the recipe away so it can be used!
+    return recipe
+
+
+plot_styles = {
+    "xlabel": r"$r (\AA)$",
+    "ylabel": r"$G (\AA^{-2})$",
+}
+
+
+if __name__ == "__main__":
+
+    # Make the data and the recipe
+    ciffile = Path(__file__).parent / "data/ni.cif"
+    data = Path(__file__).parent / "data/ni-q27r100-neutron.gr"
+
+    # Make the recipe
+    recipe = make_recipe(ciffile, data)
+
+    # Optimize
+    scipy_optimize(recipe)
+    # Save the file
+    recipe.nickel.savetxt("nickel_example.fit")
+
+    # Generate, print and save the FitResults
+    res = FitResults(recipe)
+    res.print_results()
+    res.save_results("nickel_example.res")
+
+    # Plot!
+    recipe.plot_recipe(**plot_styles)
+
+# End of file

@@ -1,0 +1,170 @@
+#!/usr/bin/env python
+########################################################################
+#
+# (c) 2009 The Trustees of Columbia University in the City of New York.
+# (c) 2026 Contributors to diffpy.cmipdf.
+# All rights reserved.
+#
+# File coded by: Chris Farrow and members of the diffpy community.
+#
+# Originally developed in diffpy.srfit by the DANSE Diffraction group and
+# Simon J. L. Billinge.
+#
+# See GitHub contributions for a more detailed list of contributors.
+# https://github.com/diffpy/diffpy.cmipdf/graphs/contributors
+#
+# See LICENSE.rst and LICENSE_DANSE.rst for license information.
+#
+########################################################################
+"""Example of a PDF refinement of two-phase structure.
+
+This example uses PDFGenerator to refine a single structure two
+profiles. This will require setting up two FitContribution, each with
+its own PDFGenerator. However, the PDFGenerators will refer to the same
+underlying ObjCrystCrystalParSet.
+"""
+
+from pathlib import Path
+
+from crystalpdf import scipy_optimize
+from pyobjcryst.crystal import create_crystal_from_cif
+
+from diffpy.cmipdf import PDFGenerator, PDFParser
+from diffpy.srfit.fitbase import (
+    FitContribution,
+    FitRecipe,
+    FitResults,
+    Profile,
+)
+
+######
+#  Example Code
+
+
+def make_recipe(ciffile, xdatname, ndatname):
+    """Create a fitting recipe for crystalline PDF data."""
+    # The Profiles
+    # We need a profile for each data set. This means that we will need two
+    # FitContributions as well.
+    xprofile = Profile()
+    nprofile = Profile()
+
+    # Load data and add it to the proper Profile.
+    parser = PDFParser()
+    parser.parse_file(xdatname)
+    xprofile.load_parsed_data(parser)
+    xprofile.set_calculation_range(xmax=20)
+
+    parser = PDFParser()
+    parser.parse_file(ndatname)
+    nprofile.load_parsed_data(parser)
+    nprofile.set_calculation_range(xmax=20)
+
+    # The ProfileGenerators
+    # We need one of these for the x-ray data.
+    xgenerator = PDFGenerator("G")
+    stru = create_crystal_from_cif(str(ciffile))
+    xgenerator.set_structure(stru)
+
+    # And we need one for the neutron data. We want to refine the same
+    # structure object in each PDFGenerator. This would suggest that we add the
+    # same Crystal to each. However, if we do that then we will have two
+    # Parameters for each Crystal data member (two Parameters for the "a"
+    # lattice parameter, etc.), held in different ObjCrystCrystalParSets, each
+    # managed by its own PDFGenerator. Thus, changes made to the Crystal
+    # through one PDFGenerator will not be known to the other PDFGenerator
+    # since their ObjCrystCrystalParSets don't know about each other. The
+    # solution is to share ObjCrystCrystalParSets rather than Crystals. This
+    # way there is only one Parameter for each Crystal data member. (An
+    # alternative to this is to constrain each structure Parameter to be varied
+    # to the same variable. The present approach is easier and less error
+    # prone.)
+    #
+    # Tell the neutron PDFGenerator to use the phase from the x-ray
+    # PDFGenerator.
+    ngenerator = PDFGenerator("G")
+    ngenerator.set_structure_from_parset(xgenerator.phase)
+
+    # The FitContributions
+    # We associate the x-ray PDFGenerator and Profile in one FitContribution...
+    xcontribution = FitContribution("xnickel")
+    xcontribution.add_profile_generator(xgenerator)
+    xcontribution.set_profile(xprofile, xname="r")
+    # and the neutron objects in another.
+    ncontribution = FitContribution("nnickel")
+    ncontribution.add_profile_generator(ngenerator)
+    ncontribution.set_profile(nprofile, xname="r")
+
+    # This example is different than the previous ones in that we are composing
+    # a residual function from other residuals (one for the x-ray contribution
+    # and one for the neutron contribution). The relative magnitude of these
+    # residuals effectively determines the influence of each contribution over
+    # the fit. This is a problem in this case because the x-ray data has
+    # uncertainty values associated with it (on the order of 1e-4), and the
+    # chi^2 residual is proportional to 1 / uncertainty**2. The neutron has no
+    # uncertainty, so it's chi^2 is proportional to 1. Thus, my optimizing
+    # chi^2 we would give the neutron data practically no weight in the fit. To
+    # get around this, we will optimize a different metric.
+    #
+    # The contribution's residual can be either chi^2, Rw^2, or custom crafted.
+    # In this case, we should minimize Rw^2 of each contribution so that each
+    # one can contribute roughly equally to the fit.
+    xcontribution.set_residual_equation("resv")
+    ncontribution.set_residual_equation("resv")
+
+    # Make the FitRecipe and add the FitContributions.
+    recipe = FitRecipe()
+    recipe.add_contribution(xcontribution)
+    recipe.add_contribution(ncontribution)
+
+    # Now we vary and constrain Parameters as before.
+    recipe.add_variable(xgenerator.scale, 1, "xscale")
+    recipe.add_variable(ngenerator.scale, 1, "nscale")
+    recipe.add_variable(xgenerator.qdamp, 0.01, "xqdamp")
+    recipe.add_variable(ngenerator.qdamp, 0.01, "nqdamp")
+    # delta2 is a non-structual material property. Thus, we constrain together
+    # delta2 Parameter from each PDFGenerator.
+    delta2 = recipe.create_new_variable("delta2", 2)
+    recipe.add_constraint(xgenerator.delta2, delta2)
+    recipe.add_constraint(ngenerator.delta2, delta2)
+
+    # We only need to constrain phase properties once since there is a single
+    # ObjCrystCrystalParSet for the Crystal.
+    phase = xgenerator.phase
+    for par in phase.sgpars:
+        recipe.add_variable(par)
+    recipe.B11_0 = 0.1
+
+    # Give the recipe away so it can be used!
+    return recipe
+
+
+plot_styles = {
+    "xlabel": r"$r (\AA)$",
+    "ylabel": r"$G (\AA^{-2})$",
+}
+
+
+if __name__ == "__main__":
+
+    # Make the data and the recipe
+    ciffile = Path(__file__).parent / "data/ni.cif"
+    xdata = Path(__file__).parent / "data/ni-q27r60nodg-xray.gr"
+    ndata = Path(__file__).parent / "data/ni-q27r100-neutron.gr"
+
+    # Make the recipe
+    recipe = make_recipe(ciffile, xdata, ndata)
+
+    # Optimize
+    scipy_optimize(recipe)
+
+    # Generate and print the FitResults
+    res = FitResults(recipe)
+    res.print_results()
+
+    # Plot! The recipe has two contributions ("xnickel" for x-ray,
+    # "nnickel" for neutron), so plot_recipe produces one figure per
+    # contribution.
+    recipe.plot_recipe(**plot_styles)
+
+# End of file

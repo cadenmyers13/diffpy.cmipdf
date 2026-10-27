@@ -38,7 +38,17 @@
 
 The code of the PDF pack of the diffpy.cmi package.
 
-* LONGER DESCRIPTION HERE
+``diffpy.cmipdf`` calculates and refines atomic pair distribution functions
+(PDFs) with ``diffpy.srfit``. ``PDFGenerator`` and ``DebyePDFGenerator``
+calculate the PDF of a crystal or of an isolated scatterer, such as a
+nanoparticle or molecule, with ``diffpy.srreal``. ``PDFContribution`` sets up a
+PDF fit from a data file and one or more structures, ``PDFParser`` reads PDF
+data and its metadata, and ``diffpy.cmipdf.characteristicfunctions`` provides
+nanoparticle shape functions. Structures are adapted for refinement by
+``diffpy.cmistructure``.
+
+This code was moved from ``diffpy.srfit.pdf``. Example refinements are in
+`docs/examples <https://github.com/diffpy/diffpy.cmipdf/tree/main/docs/examples>`_.
 
 For more information about the diffpy.cmipdf library, please consult our `online documentation <https://diffpy.github.io/diffpy.cmipdf>`_.
 
@@ -82,7 +92,7 @@ and run the following ::
 
 This package also provides command-line utilities. To check the software has been installed correctly, type ::
 
-        diffpy.cmipdf --version
+        diffpy-cmipdf --version
 
 You can also type the following command to verify the installation. ::
 
@@ -91,7 +101,7 @@ You can also type the following command to verify the installation. ::
 
 To view the basic usage and available commands, type ::
 
-        diffpy.cmipdf -h
+        diffpy-cmipdf -h
 
 Getting Started
 ---------------
