@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 
 from diffpy.cmipdf import PDFContribution
+from diffpy.cmistructure.diffpyparset import DiffpyStructureParSet
 from diffpy.srfit.exceptions import SrFitError
 from diffpy.structure import Structure, load_structure
 
@@ -126,3 +127,31 @@ def test_pickling(datafile):
     actual_residual = unpickled_contribution.residual()
     expected_residual = _make_ni_contribution(datafile, uiso=0.004).residual()
     assert np.allclose(actual_residual, expected_residual)
+
+
+def test_add_structure(datafile):
+    # C1: A diffpy.structure Structure is added to the contribution.
+    # Expected: The new generator's phase is a diffpy.cmistructure
+    # DiffpyStructureParSet that adapts the structure.
+    contribution = PDFContribution("pdf")
+    ni = load_structure(str(datafile("ni.cif")))
+    contribution.add_structure(ni, name="ni")
+    actual_phase = (
+        type(contribution.ni.phase),
+        contribution.ni.phase.structure,
+    )
+    expected_phase = (DiffpyStructureParSet, ni)
+    assert actual_phase == expected_phase
+
+
+def test_add_structure_from_parset(datafile):
+    # C1: A diffpy.cmistructure DiffpyStructureParSet is added to the
+    # contribution.
+    # Expected: The new generator manages that parameter set as its phase.
+    contribution = PDFContribution("pdf")
+    ni = load_structure(str(datafile("ni.cif")))
+    parameter_set = DiffpyStructureParSet("phase", ni)
+    contribution.add_structure_from_parset(parameter_set, name="ni")
+    actual_phase = contribution.ni.phase
+    expected_phase = parameter_set
+    assert actual_phase is expected_phase

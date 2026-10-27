@@ -23,10 +23,10 @@ __all__ = ["BasePDFGenerator"]
 
 import numpy
 
+from diffpy.cmistructure import structure_to_parameter_set
 from diffpy.srfit.exceptions import SrFitError
 from diffpy.srfit.fitbase import ProfileGenerator
 from diffpy.srfit.fitbase.parameter import ParameterAdapter
-from diffpy.srfit.structure import struToParameterSet
 
 # FIXME - Parameter creation will have to be smarter once deeper calculator
 # configuration is enabled.
@@ -257,7 +257,7 @@ class BasePDFGenerator(ProfileGenerator):
         This creates a DiffpyStructureParSet, ObjCrystCrystalParSet or
         ObjCrystMoleculeParSet that adapts structure to a ParameterSet
         interface.
-        See those classes (located in diffpy.srfit.structure) for how they are
+        See those classes (located in diffpy.cmistructure) for how they are
         used. The resulting ParameterSet will be managed by this generator.
 
         Parameters
@@ -276,7 +276,7 @@ class BasePDFGenerator(ProfileGenerator):
         """
 
         # Create the ParameterSet
-        parset = struToParameterSet(name, structure)
+        parset = structure_to_parameter_set(name, structure)
 
         # Set the phase
         self.set_structure_from_parset(parset, periodic)
@@ -304,13 +304,13 @@ class BasePDFGenerator(ProfileGenerator):
         """
         # Store the ParameterSet for easy access
         self._phase = parset
-        self.structure = self._phase.stru
+        self.structure = self._phase.structure
 
         # Put this ParameterSet in the ProfileGenerator.
         self.add_parameter_set(parset)
 
         # Set periodicity
-        self._phase.useSymmetry(periodic)
+        self._phase.use_symmetry(periodic)
         return
 
     def _prepare(self, r):

@@ -3,7 +3,9 @@
 import numpy as np
 import pytest
 
-from diffpy.cmipdf import PDFGenerator
+from diffpy.cmipdf import DebyePDFGenerator, PDFGenerator
+from diffpy.cmistructure import constrain_as_space_group
+from diffpy.cmistructure.diffpyparset import DiffpyStructureParSet
 from diffpy.srreal.pdfcalculator import PDFCalculator
 
 
@@ -49,6 +51,70 @@ def test_set_qmin():
     actual_qmins = (generator.get_qmin(), generator._calc.qmin)
     expected_qmins = (0.93, 0.93)
     assert actual_qmins == expected_qmins
+
+
+# set_structure adapts the structure with a diffpy.cmistructure parameter
+# set, which the generator then manages as its phase.
+@pytest.mark.parametrize(
+    "input_generator_class",
+    [
+        # C1: A diffpy.structure Structure is set on a generator,
+        # 1. PDFGenerator, 2. DebyePDFGenerator.
+        # Expected: The phase is a diffpy.cmistructure DiffpyStructureParSet
+        # that adapts the structure.
+        PDFGenerator,
+        DebyePDFGenerator,
+    ],
+)
+def test_set_structure(ni_pdffit_structure, input_generator_class):
+    generator = input_generator_class()
+    generator.set_structure(ni_pdffit_structure)
+    actual_phase = (type(generator.phase), generator.phase.structure)
+    expected_phase = (DiffpyStructureParSet, ni_pdffit_structure)
+    assert actual_phase == expected_phase
+
+
+# set_structure_from_parset manages the given diffpy.cmistructure parameter
+# set as the phase, and periodic sets whether it uses symmetry.
+@pytest.mark.parametrize(
+    "input_periodic, expected_using_symmetry",
+    [
+        # C1: The parameter set is set as periodic.
+        # Expected: The generator manages that parameter set, its structure
+        # is the adapted structure, and the parameter set uses symmetry.
+        (True, True),
+        # C2: The parameter set is set as not periodic.
+        # Expected: The same, except that it does not use symmetry.
+        (False, False),
+    ],
+)
+def test_set_structure_from_parset(
+    ni_pdffit_structure, input_periodic, expected_using_symmetry
+):
+    parameter_set = DiffpyStructureParSet("phase", ni_pdffit_structure)
+    generator = PDFGenerator()
+    generator.set_structure_from_parset(parameter_set, periodic=input_periodic)
+    actual_state = (
+        generator.phase is parameter_set,
+        generator.structure is ni_pdffit_structure,
+        parameter_set.using_symmetry(),
+    )
+    expected_state = (True, True, expected_using_symmetry)
+    assert actual_state == expected_state
+
+
+def test_constrain_as_space_group_accepts_generator(ni_pdffit_structure):
+    # C1: A PDFGenerator holding face-centered cubic Ni is passed to
+    # diffpy.cmistructure's constrain_as_space_group with Fm-3m.
+    # Expected: Only the lattice length a of its phase is left free.
+    generator = PDFGenerator()
+    generator.set_structure(ni_pdffit_structure)
+    space_group_parameters = constrain_as_space_group(generator, "Fm-3m")
+    actual_free_lattice_names = [
+        parameter.name for parameter in space_group_parameters.latpars
+    ]
+    expected_free_lattice_names = ["a"]
+    assert actual_free_lattice_names == expected_free_lattice_names
 
 
 def test_parameter_names(ni_pdffit_structure):
