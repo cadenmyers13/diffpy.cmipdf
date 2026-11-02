@@ -251,28 +251,43 @@ class BasePDFGenerator(ProfileGenerator):
         """
         return self._calc.qmin
 
-    def set_structure(self, structure, name="phase", periodic=True):
+    def set_structure(self, structure, name=None, periodic=True):
         """Set the structure that will be used to calculate the PDF.
 
-        This creates a DiffpyStructureParSet, ObjCrystCrystalParSet or
-        ObjCrystMoleculeParSet that adapts structure to a ParameterSet
-        interface.
-        See those classes (located in diffpy.cmistructure) for how they are
-        used. The resulting ParameterSet will be managed by this generator.
+        The structure is a structure object, the path to a structure file,
+        or a ParameterSet that adapts a structure. A structure object is
+        adapted to a new DiffpyStructureParSet, ObjCrystCrystalParSet or
+        ObjCrystMoleculeParSet (see diffpy.cmistructure), and a path is
+        first read into a diffpy.structure Structure. A ParameterSet is
+        used as it is, with its own name. The ParameterSet is managed by
+        this generator.
+
+        Giving the same ParameterSet to several generators shares the
+        structure between them. Giving them the same path does not: each
+        call reads the file again, so each generator refines its own
+        structure.
 
         Parameters
         ----------
-        structure : Structure or Crystal or Molecule
+        structure : Structure, Crystal, Molecule, Path, str or ParameterSet
             The diffpy.structure.Structure, pyobjcryst.crystal.Crystal or
-            pyobjcryst.molecule.Molecule instance.
+            pyobjcryst.molecule.Molecule instance, the path to a structure
+            file that diffpy.structure can read, such as a CIF file, or the
+            diffpy.cmistructure ParameterSet that adapts a structure.
         name : str, optional
-            The name to give to the managed ParameterSet that adapts structure
-            (default "phase").
+            The name to give to the ParameterSet made for a structure object
+            or a path (default "phase"). It can't be given with a
+            ParameterSet.
         periodic : bool, optional
             The structure should be treated as periodic (default
             True). Note that some structures do not support
             periodicity, in which case this will have no effect on the
             PDF calculation.
+
+        Raises
+        ------
+        ValueError
+            If a ``name`` is given with a ParameterSet.
         """
 
         # Create the ParameterSet

@@ -87,28 +87,35 @@ class DebyePDFGenerator(BasePDFGenerator):
         See Managed Parameters.
     """
 
-    def set_structure(self, structure, name="phase", periodic=False):
+    def set_structure(self, structure, name=None, periodic=False):
         """Set the structure that will be used to calculate the PDF.
 
-        This creates a DiffpyStructureParSet, ObjCrystCrystalParSet or
-        ObjCrystMoleculeParSet that adapts structure to a ParameterSet
-        interface.
-        See those classes (located in diffpy.cmistructure) for how they are
-        used. The resulting ParameterSet will be managed by this generator.
+        This is BasePDFGenerator.set_structure with the structure treated
+        as not periodic by default. The structure is a structure object,
+        the path to a structure file, or a ParameterSet that adapts a
+        structure, which is used as it is, with its own name.
 
         Parameters
         ----------
-        structure : Structure object
-            The `diffpy.structure.Structure`, `pyobjcryst.crystal.Crystal` or
-            `pyobjcryst.molecule.Molecule` instance.
+        structure : Structure, Crystal, Molecule, Path, str or ParameterSet
+            The diffpy.structure.Structure, pyobjcryst.crystal.Crystal or
+            pyobjcryst.molecule.Molecule instance, the path to a structure
+            file that diffpy.structure can read, such as a CIF file, or the
+            diffpy.cmistructure ParameterSet that adapts a structure.
         name : str, optional
-            A name to give to the managed ParameterSet that adapts structure
-            (default "phase").
+            The name to give to the ParameterSet made for a structure object
+            or a path (default "phase"). It can't be given with a
+            ParameterSet.
         periodic : bool, optional
             The structure should be treated as periodic (default
             False). Note that some structures do not support
             periodicity, in which case this will have no effect on the
             PDF calculation.
+
+        Raises
+        ------
+        ValueError
+            If a ``name`` is given with a ParameterSet.
         """
         return BasePDFGenerator.set_structure(self, structure, name, periodic)
 
