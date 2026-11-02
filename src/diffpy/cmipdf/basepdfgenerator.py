@@ -289,7 +289,6 @@ class BasePDFGenerator(ProfileGenerator):
         ValueError
             If a ``name`` is given with a ParameterSet.
         """
-
         # Create the ParameterSet
         parset = structure_to_parameter_set(name, structure)
 
