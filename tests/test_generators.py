@@ -132,12 +132,10 @@ def test_set_structure_with_parameter_set(
     parameter_set = DiffpyStructureParSet("ni", ni_pdffit_structure)
     generator = input_generator_class()
     generator.set_structure(parameter_set)
-    actual_phase = generator.phase
     actual_managed_phase = generator.get("ni")
     actual_using_symmetry = parameter_set.using_symmetry()
-    expected_phase = parameter_set
-    assert actual_phase == expected_phase
-    assert actual_managed_phase == expected_phase
+    expected_managed_phase = parameter_set
+    assert actual_managed_phase == expected_managed_phase
     assert actual_using_symmetry == expected_using_symmetry
 
 

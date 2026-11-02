@@ -21,12 +21,16 @@ used as a base for the PDFGenerator and DebyePDFGenerator classes.
 
 __all__ = ["BasePDFGenerator"]
 
+from pathlib import Path
+
 import numpy
 
 from diffpy.cmistructure import structure_to_parameter_set
+from diffpy.cmistructure.basestructureparset import BaseStructureParSet
 from diffpy.srfit.exceptions import SrFitError
 from diffpy.srfit.fitbase import ProfileGenerator
 from diffpy.srfit.fitbase.parameter import ParameterAdapter
+from diffpy.structure import load_structure
 
 # FIXME - Parameter creation will have to be smarter once deeper calculator
 # configuration is enabled.
@@ -289,11 +293,21 @@ class BasePDFGenerator(ProfileGenerator):
         ValueError
             If a ``name`` is given with a ParameterSet.
         """
-
-        # Create the ParameterSet
-        parset = structure_to_parameter_set(name, structure)
-
-        # Set the phase
+        if isinstance(structure, BaseStructureParSet):
+            if name is not None:
+                raise ValueError(
+                    f"set_structure was given the name '{name}' with a "
+                    "ParameterSet, which keeps its own name, "
+                    f"'{structure.name}'. Please leave out the name, or give "
+                    "it when you create the ParameterSet."
+                )
+            parset = structure
+        else:
+            if isinstance(structure, (str, Path)):
+                structure = load_structure(str(structure))
+            if name is None:
+                name = "phase"
+            parset = structure_to_parameter_set(name, structure)
         self.set_structure_from_parset(parset, periodic)
         return
 
