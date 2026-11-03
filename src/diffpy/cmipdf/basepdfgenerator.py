@@ -280,8 +280,8 @@ class BasePDFGenerator(ProfileGenerator):
             diffpy.cmistructure ParameterSet that adapts a structure.
         name : str, optional
             The name to give to the ParameterSet made for a structure object
-            or a path (default "phase"). It can't be given with a
-            ParameterSet.
+            or a path (default "phase"). With a ParameterSet, it must match
+            the ParameterSet's own name.
         periodic : bool, optional
             The structure should be treated as periodic (default
             True). Note that some structures do not support
@@ -291,10 +291,10 @@ class BasePDFGenerator(ProfileGenerator):
         Raises
         ------
         ValueError
-            If a ``name`` is given with a ParameterSet.
+            If a ParameterSet is given with a ``name`` other than its own.
         """
         if isinstance(structure, BaseStructureParSet):
-            if name is not None:
+            if name is not None and name != structure.name:
                 raise ValueError(
                     f"set_structure was given the name '{name}' with a "
                     "ParameterSet, which keeps its own name, "

@@ -109,7 +109,8 @@ def test_set_structure_from_parset(
 
 
 @pytest.mark.parametrize(
-    "input_generator_class, expected_using_symmetry",
+    "input_generator_class, input_set_structure_kwargs, "
+    "expected_using_symmetry",
     [
         # Test setting the structure from an existing ParameterSet with
         # set_structure, as a user does to share one structure between
@@ -118,20 +119,27 @@ def test_set_structure_from_parset(
         # Expected: The generator manages that same ParameterSet under its
         # own name, ni, and it uses symmetry, as PDFGenerator treats a
         # structure as periodic by default.
-        (PDFGenerator, True),
+        (PDFGenerator, {}, True),
         # C2: A user gives the same kind of ParameterSet to a
         # DebyePDFGenerator.
         # Expected: The same, except that it does not use symmetry, as
         # DebyePDFGenerator treats a structure as not periodic by default.
-        (DebyePDFGenerator, False),
+        (DebyePDFGenerator, {}, False),
+        # C3: A user gives the ParameterSet named ni to a PDFGenerator,
+        # with the same name, ni.
+        # Expected: The same as without the name, since the names match.
+        (PDFGenerator, {"name": "ni"}, True),
     ],
 )
 def test_set_structure_with_parameter_set(
-    ni_pdffit_structure, input_generator_class, expected_using_symmetry
+    ni_pdffit_structure,
+    input_generator_class,
+    input_set_structure_kwargs,
+    expected_using_symmetry,
 ):
     parameter_set = DiffpyStructureParSet("ni", ni_pdffit_structure)
     generator = input_generator_class()
-    generator.set_structure(parameter_set)
+    generator.set_structure(parameter_set, **input_set_structure_kwargs)
     actual_managed_phase = generator.get("ni")
     actual_using_symmetry = parameter_set.using_symmetry()
     expected_managed_phase = parameter_set
@@ -139,9 +147,9 @@ def test_set_structure_with_parameter_set(
     assert actual_using_symmetry == expected_using_symmetry
 
 
-def test_set_structure_with_parameter_set_and_name(ni_pdffit_structure):
-    # Test giving set_structure a name with a ParameterSet, which already
-    # has its own name
+def test_set_structure_with_parameter_set_and_other_name(ni_pdffit_structure):
+    # Test giving set_structure a name with a ParameterSet that has another
+    # name of its own
     # Expected: A ValueError says the name can't be used and how to name
     # the ParameterSet instead.
     parameter_set = DiffpyStructureParSet("phase", ni_pdffit_structure)
