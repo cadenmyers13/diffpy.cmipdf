@@ -1,5 +1,8 @@
 """Tests for the pdfgenerator module."""
 
+import re
+from pathlib import Path
+
 import numpy as np
 import pytest
 
@@ -8,6 +11,7 @@ from diffpy.cmistructure import constrain_as_space_group
 from diffpy.cmistructure.diffpyparset import DiffpyStructureParSet
 from diffpy.srreal.pdfcalculator import DebyePDFCalculator, PDFCalculator
 from diffpy.srreal.structureadapter import nosymmetry
+from diffpy.structure import load_structure
 
 
 # set_scattering_type stores the radiation type used for the calculation.
@@ -102,6 +106,87 @@ def test_set_structure_from_parset(
     )
     expected_state = (True, True, expected_using_symmetry)
     assert actual_state == expected_state
+
+
+@pytest.mark.parametrize(
+    "input_generator_class, expected_using_symmetry",
+    [
+        # Test setting the structure from an existing ParameterSet with
+        # set_structure, as a user does to share one structure between
+        # generators
+        # C1: A user gives a ParameterSet named ni to a PDFGenerator.
+        # Expected: The generator manages that same ParameterSet under its
+        # own name, ni, and it uses symmetry, as PDFGenerator treats a
+        # structure as periodic by default.
+        (PDFGenerator, True),
+        # C2: A user gives the same kind of ParameterSet to a
+        # DebyePDFGenerator.
+        # Expected: The same, except that it does not use symmetry, as
+        # DebyePDFGenerator treats a structure as not periodic by default.
+        (DebyePDFGenerator, False),
+    ],
+)
+def test_set_structure_with_parameter_set(
+    ni_pdffit_structure, input_generator_class, expected_using_symmetry
+):
+    parameter_set = DiffpyStructureParSet("ni", ni_pdffit_structure)
+    generator = input_generator_class()
+    generator.set_structure(parameter_set)
+    actual_managed_phase = generator.get("ni")
+    actual_using_symmetry = parameter_set.using_symmetry()
+    expected_managed_phase = parameter_set
+    assert actual_managed_phase == expected_managed_phase
+    assert actual_using_symmetry == expected_using_symmetry
+
+
+def test_set_structure_with_parameter_set_and_name(ni_pdffit_structure):
+    # Test giving set_structure a name with a ParameterSet, which already
+    # has its own name
+    # Expected: A ValueError says the name can't be used and how to name
+    # the ParameterSet instead.
+    parameter_set = DiffpyStructureParSet("phase", ni_pdffit_structure)
+    generator = PDFGenerator()
+    expected_msg = (
+        "set_structure was given the name 'ni' with a ParameterSet, which "
+        "keeps its own name, 'phase'. Please leave out the name, or give it "
+        "when you create the ParameterSet."
+    )
+    with pytest.raises(ValueError, match=re.escape(expected_msg)):
+        generator.set_structure(parameter_set, name="ni")
+
+
+@pytest.mark.parametrize(
+    "input_generator_class, input_path_type",
+    [
+        # Test setting the structure from the path to a structure file
+        # C1: A user gives the path to ni.cif to a PDFGenerator as a
+        # pathlib.Path.
+        # Expected: The phase is a DiffpyStructureParSet named phase that
+        # adapts the structure diffpy.structure reads from the file.
+        (PDFGenerator, Path),
+        # C2: A user gives the same path as a string.
+        # Expected: The same as for the Path.
+        (PDFGenerator, str),
+        # C3: A user gives the path to a DebyePDFGenerator.
+        # Expected: The same as for the PDFGenerator.
+        (DebyePDFGenerator, Path),
+    ],
+)
+def test_set_structure_with_structure_file(
+    datafile, input_generator_class, input_path_type
+):
+    structure_path = input_path_type(datafile("ni.cif"))
+    generator = input_generator_class()
+    generator.set_structure(structure_path)
+    actual_phase_type = type(generator.phase)
+    actual_phase_name = generator.phase.name
+    actual_structure = str(generator.phase.structure)
+    expected_phase_type = DiffpyStructureParSet
+    expected_phase_name = "phase"
+    expected_structure = str(load_structure(str(datafile("ni.cif"))))
+    assert actual_phase_type == expected_phase_type
+    assert actual_phase_name == expected_phase_name
+    assert actual_structure == expected_structure
 
 
 def test_constrain_as_space_group_accepts_generator(ni_pdffit_structure):

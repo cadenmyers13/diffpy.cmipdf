@@ -21,12 +21,16 @@ used as a base for the PDFGenerator and DebyePDFGenerator classes.
 
 __all__ = ["BasePDFGenerator"]
 
+from pathlib import Path
+
 import numpy
 
 from diffpy.cmistructure import structure_to_parameter_set
+from diffpy.cmistructure.basestructureparset import BaseStructureParSet
 from diffpy.srfit.exceptions import SrFitError
 from diffpy.srfit.fitbase import ProfileGenerator
 from diffpy.srfit.fitbase.parameter import ParameterAdapter
+from diffpy.structure import load_structure
 
 # FIXME - Parameter creation will have to be smarter once deeper calculator
 # configuration is enabled.
@@ -251,34 +255,59 @@ class BasePDFGenerator(ProfileGenerator):
         """
         return self._calc.qmin
 
-    def set_structure(self, structure, name="phase", periodic=True):
+    def set_structure(self, structure, name=None, periodic=True):
         """Set the structure that will be used to calculate the PDF.
 
-        This creates a DiffpyStructureParSet, ObjCrystCrystalParSet or
-        ObjCrystMoleculeParSet that adapts structure to a ParameterSet
-        interface.
-        See those classes (located in diffpy.cmistructure) for how they are
-        used. The resulting ParameterSet will be managed by this generator.
+        The structure is a structure object, the path to a structure file,
+        or a ParameterSet that adapts a structure. A structure object is
+        adapted to a new DiffpyStructureParSet, ObjCrystCrystalParSet or
+        ObjCrystMoleculeParSet (see diffpy.cmistructure), and a path is
+        first read into a diffpy.structure Structure. A ParameterSet is
+        used as it is, with its own name. The ParameterSet is managed by
+        this generator.
+
+        Giving the same ParameterSet to several generators shares the
+        structure between them. Giving them the same path does not: each
+        call reads the file again, so each generator refines its own
+        structure.
 
         Parameters
         ----------
-        structure : Structure or Crystal or Molecule
+        structure : Structure, Crystal, Molecule, Path, str or ParameterSet
             The diffpy.structure.Structure, pyobjcryst.crystal.Crystal or
-            pyobjcryst.molecule.Molecule instance.
+            pyobjcryst.molecule.Molecule instance, the path to a structure
+            file that diffpy.structure can read, such as a CIF file, or the
+            diffpy.cmistructure ParameterSet that adapts a structure.
         name : str, optional
-            The name to give to the managed ParameterSet that adapts structure
-            (default "phase").
+            The name to give to the ParameterSet made for a structure object
+            or a path (default "phase"). It can't be given with a
+            ParameterSet.
         periodic : bool, optional
             The structure should be treated as periodic (default
             True). Note that some structures do not support
             periodicity, in which case this will have no effect on the
             PDF calculation.
+
+        Raises
+        ------
+        ValueError
+            If a ``name`` is given with a ParameterSet.
         """
-
-        # Create the ParameterSet
-        parset = structure_to_parameter_set(name, structure)
-
-        # Set the phase
+        if isinstance(structure, BaseStructureParSet):
+            if name is not None:
+                raise ValueError(
+                    f"set_structure was given the name '{name}' with a "
+                    "ParameterSet, which keeps its own name, "
+                    f"'{structure.name}'. Please leave out the name, or give "
+                    "it when you create the ParameterSet."
+                )
+            parset = structure
+        else:
+            if isinstance(structure, (str, Path)):
+                structure = load_structure(str(structure))
+            if name is None:
+                name = "phase"
+            parset = structure_to_parameter_set(name, structure)
         self.set_structure_from_parset(parset, periodic)
         return
 
